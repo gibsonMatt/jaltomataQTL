@@ -1,0 +1,163 @@
+---
+title: "jaltomataMapping"
+author: "Matthew Gibson and Jamie Kostyun"
+date: "February 13, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+```
+
+```{r}
+library(qtl)
+
+macDir <- "~/jaltomataQTL"
+pcDir <- "c:/Users/matth/Documents/bin/jaltomataQTL/maps"
+
+setwd(pcDir)
+
+```
+
+
+```{r}
+jal_cross <- read.cross("csv",pcDir, "batch_1.genotypes_20_herm.csv", genotypes=c("b", "h"), alleles=c("A", "B"), na.strings=c("-", "NA"), estimate.map=F,crosstype = "bc")
+
+
+```
+# Scanning for QTL
+
+
+### Define covariates, calculate genotype probs.
+```{r}
+h_color <- pull.pheno(jal_cross, pheno.col=c(2, 5))
+h_morph <- pull.pheno(jal_cross, pheno.col=c(2, 3))
+crossed <- pull.pheno(jal_cross, pheno.col=c(2, 57))
+justBench <- pull.pheno(jal_cross, pheno.col=2)
+jal_cross <- calc.genoprob(jal_cross, step=1)
+jal_cross <- sim.geno(jal_cross, step=1, n.draws=64)
+```
+
+### Scan for QTL- all morphological traits
+```{r}
+scan_all_morph <- scanone(jal_cross, pheno.col=c(6:23), method="em", addcovar=h_morph)
+summary(scan_all_morph, threshold=3, format="tabByChr")
+summary(scan_all_morph, threshold=3, format="tabByCol")
+
+#par(mfrow=c(3,1))
+for (x in 1:18){
+  plot(scan_all_morph, lodcolumn = x)
+  abline(3,0,lty=2)
+}
+
+
+```
+
+### Scan for QTL- all color traits
+```{r}
+scan_all_color <- scanone(jal_cross, pheno.col=c(24:56), method="em", addcovar=h_color)
+summary(scan_all_color, threshold=3, format="tabByChr")
+summary(scan_all_color, threshold=3, format="tabByCol")
+
+#par(mfrow=c(3,1))
+for (x in 1:33){
+  plot(scan_all_color, lodcolumn = x)
+  abline(3,0,lty=2)
+}
+```
+
+### Scan for QTL- all seed and fruit traits (non-selfed; pollen from Sinosa)
+```{r}
+scan_all_seedFruit <- scanone(jal_cross, pheno.col=c(58:71), method="em", addcovar=crossed)
+summary(scan_all_seedFruit, threshold=3, format="tabByChr")
+summary(scan_all_seedFruit, threshold=3, format="tabByCol")
+
+#par(mfrow=c(3,1))
+for (x in 1:13){
+  plot(scan_all_seedFruit, lodcolumn = x)
+  abline(3,0,lty=2)
+}
+```
+
+### Scan for QTL- seed, pollen, and fruit traits (selfed)
+```{r}
+scan_all_self <- scanone(jal_cross, pheno.col=c(72:79), method="em", addcovar=justBench)
+summary(scan_all_self, threshold=3, format="tabByChr")
+summary(scan_all_self, threshold=3, format="tabByCol")
+
+#par(mfrow=c(3,1))
+for (x in 1:8){
+  plot(scan_all_self, lodcolumn = x)
+  abline(3,0,lty=2)
+}
+
+```
+
+#```{r}
+#Nectar Volume
+log.nec.vol.mean.h <- scanone(jal_cross, pheno.col=37, method="em", addcovar=h_morph)
+plot(log.nec.vol.mean.h)
+#No QTL for nectar volume
+
+
+#Nectar Color
+log.comp.rgb.h.nec <- scanone(jal_cross, pheno.col=59, method = "em", addcovar = h_color)
+plot(log.comp.rgb.h.nec, main="Log Composite RGB (H) Nectar")
+
+log.mean.B.h.nec <- scanone(jal_cross, pheno.col=65, method = "em", addcovar = h_color)
+plot(log.mean.B.h.nec, main="Log Mean B-Color (H) Nectar")
+
+plot(log.comp.rgb.h.nec,log.mean.B.h.nec)
+
+#max(out.hk)
+#mar <- find.marker(sug, chr=7, pos=47.7)
+#plotPXG(sug, marker=mar
+
+#Global max on 8
+#max(log.comp.rgb.h.nec)
+
+#Local max on 2
+#max(log.comp.rgb.h.nec[log.comp.rgb.h.nec$chr=='2',])
+#mar2 <- find.marker(jal_cross, chr=2, pos=47)
+#mar <- find.marker(jal_cross, chr=8, pos=88.3)
+#plotPXG(jal_cross,marker=mar, pheno.col = 59, infer=F)
+#effectplot(jal_cross, mname1=mar, mname2=mar2, pheno.col=59)
+#Possible weak epistasis 
+
+
+
+#Petal Colors
+log.comp.rgb.h.pet <- scanone(jal_cross, pheno.col=91, method="em", addcovar=h_color)
+plot(log.comp.rgb.h.pet, main="Log Composite RGB (H) Petals")
+
+log.mean.B.h.pet <- scanone(jal_cross, pheno.col=97, method="em", addcovar=h_color)
+plot(log.mean.B.h.pet, main="Log Mean B-Color (H) Petals")
+
+
+#Corolla Traits
+cor.dia.h <- scanone(jal_cross, pheno.col=12, method="em", addcovar=h_morph)
+plot(cor.dia.h, main="Corolla Diameter (H)")
+
+cor.dep.h <- scanone(jal_cross, pheno.col=14, method="em", addcovar=h_morph)
+plot(cor.dep.h, main="Corolla Depth (H)")
+
+cor.fus.h <- scanone(jal_cross, pheno.col=16, method="em", addcovar=h_morph)
+plot(cor.fus.h, main="Corolla Fusion (H)")
+
+log.cor.fus.h <- scanone(jal_cross, pheno.col=17, method="em", addcovar=h_morph)
+plot(log.cor.fus.h, main="Log Corolla Fusion (H)")
+
+prop.cor.fus.h <- scanone(jal_cross, pheno.col=19, method="em", addcovar=h_morph)
+plot(prop.cor.fus.h, main = "Proportion(?) Corolla Fusion (H)")
+
+
+#Petals
+pet.h <- scanone(jal_cross, pheno.col=21, method="em", addcovar=h_morph)
+plot(pet.h, main="Petals (H)")
+
+log.pet.h <- scanone(jal_cross, pheno.col=22, method="em", addcovar=h_morph)
+plot(log.pet.h, main="Log Petals (H)")
+#```
+
