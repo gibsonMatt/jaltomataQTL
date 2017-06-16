@@ -84,24 +84,21 @@ module load stacks
 
 genotypes -P /N/dc2/projects/gibsonTomato/jaltomata/rawdata/release_data/stacksOutput \
         -b 1 -r 20 -c -m 6 -t BC1 -o joinmap
-
 ```
+
+###### Convert genotypes to R/QTL format using `filter_jp_file.py`
+
+
 
 ## Linkage Map
-###### Build linkage map in JoinMap using Kosambi algorithm
-
-###### Convert map to R/QTL format (complete with genotypes)
-```
-python joinmap2rqtl.py
-```
+###### Build linkage map in R using ASMap.
+###### Remove problems markers using `correctGenotypes.py`
+See `jaltomataMapping_5.Rmd` for details.
 
 ###### Add in trait values
 
 ## Map QTL in `R/QTL`
+See `QTL_scanning.Rmd` for details
 
-See `jaltomataMapping.Rmd` for details
 
 
-## Future tasks:
-
-- Use raw, multiplexed data and do full STACKS pipeline (w/ `process_radtags`)
