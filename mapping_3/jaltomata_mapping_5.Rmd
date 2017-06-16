@@ -24,7 +24,7 @@ setwd(pcDir)
 jal_cross <- read.cross("csv",pcDir, "batch_1.genotypes_20.filtered.loc", genotypes=c("b", "h"), alleles=c("A", "B"), na.strings=c("-", "NA"), estimate.map=F,crosstype = "bc")
 ```
 
-### Visualize and filted markers.
+### Visualize and filter markers.
 ```{r}
 
 par(mfrow=c(1,2), las=1)
@@ -82,12 +82,12 @@ chrlen(mapJal1)
 profileMark(mapJal1.1, stat.type = c("seg.dist", "prop", "dxo", "recomb"),layout = c(1, 5), type = "l")
 ```
 
-### Write map to file and run through `correctGenotypes.py` which removes markers that have genotypes which consistently disagree with its neighbors
+### Write map to file and run through `correctGenotypes.py`. Will remove markers with genotypes that consistently disagree with neighbors.
 ```{r}
 #write.cross(mapJal1, format="csvr")
 ```
 
-### Reload cross
+### Re-load cross
 ```{r}
 jal_cross <- read.cross("csv",pcDir, "filtered_mapJal1.csv", genotypes=c("A", "H"), alleles=c("A", "B"), na.strings=c("-", "NA"), estimate.map=F,crosstype = "bc")
 ```
@@ -101,7 +101,7 @@ profileMark(mapJal3, stat.type = c("seg.dist", "prop", "dxo", "recomb"),layout =
 #write.cross(mapJal3, format="csvr")
 ```
 
-### More stringent threshold. 
+### More stringent filtering threshold...
 ```{r}
 mapJal4 <- read.cross("csv",pcDir, "mapJal4.csv", genotypes=c("A", "H"), alleles=c("A", "B"), na.strings=c("-", "NA"), estimate.map=F,crosstype = "bc")
 mapJal4 <- mstmap(mapJal4, bychr = T, dist.fun = "kosambi", trace = TRUE, p.value = 2, id="index")
@@ -121,7 +121,7 @@ summary(rip)
 #write.cross(mapJal4, format="csvr")
 ```
 
-# This is the correct map
+# Final map
 ```{r}
 finalMap <- read.cross("csv",pcDir, "final_map_6_15_t.csv", genotypes=c("A", "H"), alleles=c("A", "B"), na.strings=c("-", "NA"), estimate.map=F,crosstype = "bc")
 
