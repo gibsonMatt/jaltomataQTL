@@ -43,10 +43,20 @@ veg <- pull.pheno(mapJal5.1, pheno.col=c(3, 10))
 #summary(all, threshold=3, format="tabByCol")
 ```
 
-### Seed trichomes
+### Trichomes
 ```{r}
-seedHair <- scanone(mapJal5.1, pheno.col=11, method="em", model="binary",addcovar=trichome)
-plot(seedHair)
+hairs <- scanone(mapJal5.1, pheno.col=11, method="em", model="binary",addcovar=trichome)
+plot(hairs)
+abline(3,0,lty=2)
+```
+
+### Seedling form and spacing
+```{r}
+formSpacing <- scanone(mapJal5.1, pheno.col=c(88,89), method="em", model="binary", addcovar=trichome)
+plot(formSpacing, lodcolumn = 1)
+abline(3,0,lty=2)
+
+plot(formSpacing, lodcolumn = 2)
 abline(3,0,lty=2)
 ```
 
