@@ -19,7 +19,7 @@ setwd(pcDir)
 ## Load the cross
 ```{r}
 mapJal5.1 <- read.cross("csv",pcDir, "final_map_6_15_t.csv", genotypes=c("A", "H"), alleles=c("A", "B"), na.strings=c("-", "NA"), estimate.map=F,crosstype = "bc")
-#write.cross(mapJal5.1, format="csvr")
+write.cross(mapJal5.1, format="csvr")
 plot.map(mapJal5.1)
 mapJal5.1 <- calc.genoprob(mapJal5.1, step=0.1)
 ```
@@ -114,5 +114,17 @@ for (x in 1:11){
   plot(fertility, lodcolumn = x)
   abline(3,0,lty=2)
 }
+
+```
+
+
+## Permutation tests
+```{r}
+testPerm <- scanone(mapJal5.1, pheno.col=c(59), n.perm=5, addcovar = trichome)
+
+out.hk <- scanone(mapJal5.1, pheno.col=59, method="hk")
+summary(out.hk, perms=testPerm, alpha=0.05, pvalues=T)
+x <- summary(testPerm)
+save(x, file="x.data")
 
 ```

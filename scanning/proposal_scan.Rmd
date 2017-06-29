@@ -1,0 +1,210 @@
+---
+title: "Proposal QTL scanning"
+author: "Matthew Gibson"
+date: "June 29, 2017"
+output:
+  html_notebook: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(qtl)
+pcDir <- "c:/Users/matth/Documents/bin/jaltomataQTL/mapping_3"
+setwd(pcDir)
+```
+
+## Load the cross
+```{r}
+mapJal5.1 <- read.cross("csv",pcDir, "final_map_6_15_t.csv", genotypes=c("A", "H"), alleles=c("A", "B"), na.strings=c("-", "NA"), estimate.map=F,crosstype = "bc")
+write.cross(mapJal5.1, format="csvr")
+plot.map(mapJal5.1)
+mapJal5.1 <- calc.genoprob(mapJal5.1, step=0.1)
+```
+
+## Setup covariates
+```{r}
+bench <- pull.pheno(mapJal5.1, pheno.col = 3)
+hmorph <- pull.pheno(mapJal5.1, pheno.col=c(3, 4))
+fmorph <- pull.pheno(mapJal5.1, pheno.col=c(3, 5))
+hcolor <- pull.pheno(mapJal5.1, pheno.col=c(3, 6))
+fcolor <- pull.pheno(mapJal5.1, pheno.col=c(3, 7))
+crossed <- pull.pheno(mapJal5.1, pheno.col=c(3, 8))
+trichome <- pull.pheno(mapJal5.1, pheno.col=c(3,8))
+veg <- pull.pheno(mapJal5.1, pheno.col=c(3, 10))
+```
+
+## Redo scans of the focal traits
+
+### Herm corolla diameter
+```{r}
+herm_cor_diameter <- scanone(mapJal5.1, pheno.col=32, method="em", addcovar=hmorph)
+plot(herm_cor_diameter)
+abline(2.81,0,lty=2)
+
+lodint(herm_cor_diameter, chr='L.19')
+lodint(herm_cor_diameter, chr='L.4')
+
+#Explained variance for QTL on L.19
+print(R2 <- (1 - 10^(-2*5.074939/(269-45))))
+
+#Explained variance for QTL on L.4
+print(R2 <- (1 - 10^(-2*7.991513/(269-45))))
+```
+
+### Herm corolla depth
+```{r}
+herm_cor_dep <- scanone(mapJal5.1, pheno.col=33, method="em", addcovar=hmorph)
+plot(herm_cor_dep)
+abline(2.66,0,lty=2)
+
+
+lodint(herm_cor_dep, chr='L.3')
+lodint(herm_cor_dep, chr='L.5')
+lodint(herm_cor_dep, chr='L.6')
+
+
+#Explained variance for QTL on L.3
+print(R2 <- (1 - 10^(-2*5.148749/(269-45))))
+
+#Explained variance for QTL on L.5
+print(R2 <- (1 - 10^(-2*6.36536/(269-45))))
+
+#Explained variance for QTL on L.6
+print(R2 <- (1 - 10^(-2*12.85144/(269-45))))
+
+```
+
+### Herm log corolla fusion
+```{r}
+herm_log_cor_fus <- scanone(mapJal5.1, pheno.col=34, method="em", addcovar=hmorph)
+plot(herm_log_cor_fus)
+abline(2.82,0,lty=2)
+
+lodint(herm_log_cor_fus, chr='L.19')
+lodint(herm_log_cor_fus, chr='L.5')
+lodint(herm_log_cor_fus, chr='L.6')
+lodint(herm_log_cor_fus, chr='L.8')
+
+
+#Explained variance for QTL on L.19
+print(R2 <- (1 - 10^(-2*4.455928/(269-45))))
+
+#Explained variance for QTL on L.5
+print(R2 <- (1 - 10^(-2*4.278688/(269-45))))
+
+#Explained variance for QTL on L.6
+print(R2 <- (1 - 10^(-2*5.265163/(269-45))))
+
+#Explained variance for QTL on L.8
+print(R2 <- (1 - 10^(-2*4.682373/(269-45))))
+
+```
+### Log corolla fusion proportion
+```{r}
+herm_log_cor_fus_prop <- scanone(mapJal5.1, pheno.col=35, method="em", addcovar=hmorph)
+plot(herm_log_cor_fus_prop)
+abline(2.76,0,lty=2)
+
+
+lodint(herm_log_cor_fus_prop, chr='L.5')
+lodint(herm_log_cor_fus_prop, chr='L.8')
+
+#Explained variance for QTL on L.5
+print(R2 <- (1 - 10^(-2*5.453092/(269-45))))
+
+#Explained variance for QTL on L.8
+print(R2 <- (1 - 10^(-2*3.178532/(269-45))))
+
+```
+
+
+### Herm petal length
+```{r}
+herm_petal_length <- scanone(mapJal5.1, pheno.col=36, method="em", addcovar=hmorph)
+plot(herm_petal_length)
+abline(2.8,0,lty=2)
+
+
+lodint(herm_petal_length, chr='L.19')
+lodint(herm_petal_length, chr='L.4')
+lodint(herm_petal_length, chr='L.6')
+
+#Explained variance for QTL on L.19
+print(R2 <- (1 - 10^(-2*4.894433/(269-45))))
+
+#Explained variance for QTL on L.4
+print(R2 <- (1 - 10^(-2*5.654602/(269-45))))
+
+#Explained variance for QTL on L.6
+print(R2 <- (1 - 10^(-2*3.098091/(269-45))))
+```
+
+
+### Herm nectar volume
+```{r}
+herm_nec_volume <- scanone(mapJal5.1, pheno.col=59, method="em", addcovar=hcolor)
+plot(herm_nec_volume)
+abline(2.8,0,lty=2)
+
+lodint(herm_nec_volume, chr='L.2')
+
+#Explained variance for QTL on L.2
+print(R2 <- (1 - 10^(-2*2.865291/(269-48))))
+
+
+```
+
+```{r}
+herm_nec_color_rgb <- scanone(mapJal5.1, pheno.col=61, method="em", addcovar=hcolor)
+plot(herm_nec_color_rgb)
+abline(2.73,0,lty=2)
+
+lodint(herm_nec_color_rgb, chr='L.3')
+lodint(herm_nec_color_rgb, chr='L.6')
+lodint(herm_nec_color_rgb, chr='L.9')
+
+
+#Explained variance for QTL on L.3
+print(R2 <- (1 - 10^(-2*10.834672/(269-48))))
+
+#Explained variance for QTL on L.6
+print(R2 <- (1 - 10^(-2*12.65906/(269-48))))
+
+#Explained variance for QTL on L.9
+print(R2 <- (1 - 10^(-2*3.540315/(269-48))))
+```
+
+### Herm nectar color a
+```{r}
+herm_nec_color_a <- scanone(mapJal5.1, pheno.col=66, method="em", addcovar=hcolor)
+plot(herm_nec_color_a)
+abline(2.63,0,lty=2)
+
+lodint(herm_nec_color_a, chr='L.2')
+
+
+#Explained variance for QTL on L.3
+print(R2 <- (1 - 10^(-2*4.988582/(269-48))))
+
+```
+
+### Herm nectar color b
+```{r}
+herm_nec_color_b <- scanone(mapJal5.1, pheno.col=67, method="em", addcovar=hcolor)
+plot(herm_nec_color_b)
+abline(2.79,0,lty=2)
+
+lodint(herm_nec_color_b, chr='L.3')
+lodint(herm_nec_color_b, chr='L.6')
+lodint(herm_nec_color_b, chr='L.9')
+
+#Explained variance for QTL on L.3
+print(R2 <- (1 - 10^(-2*8.632559/(269-48))))
+
+#Explained variance for QTL on L.6
+print(R2 <- (1 - 10^(-2*8.837499/(269-48))))
+
+#Explained variance for QTL on L.9
+print(R2 <- (1 - 10^(-2*3.076774/(269-48))))
+```
