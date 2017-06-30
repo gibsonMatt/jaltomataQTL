@@ -3,6 +3,7 @@ title: "Proposal QTL scanning"
 author: "Matthew Gibson"
 date: "June 29, 2017"
 output:
+  pdf_document: default
   html_notebook: default
   html_document: default
 ---
@@ -207,4 +208,37 @@ print(R2 <- (1 - 10^(-2*8.837499/(269-48))))
 
 #Explained variance for QTL on L.9
 print(R2 <- (1 - 10^(-2*3.076774/(269-48))))
+```
+
+```{r}
+
+pcDir <- "c:/Users/matth/Documents/bin/jaltomataQTL/candidate_genes"
+setwd(pcDir)
+```
+
+# Candidate gene discovery
+
+Chr 1: L.6   
+Chr 2: L.3   
+Chr 3:    
+Chr 4:    
+Chr 5: L.17   
+Chr 6: L.2   
+Chr 7: L.8   
+Chr 8: L.7   
+Chr 9   
+Chr 10   
+Chr 11   
+Chr 12: L.1   
+
+Corolla fusion proportion: L.5, *L.8*   
+Corolla diameter: L.4, L.19   
+Corolla depth: *L.6*, L.5, *L.3*   
+Petal length: L.4, L.19, *L.6*   
+Nectar color RGB: *L.6*, *L.3*   
+
+## Identifying loci in peaks for herm nectar color RGB
+```{r}
+loci <- herm_nec_color_rgb[herm_nec_color_rgb$lod > 2.73,]
+loci <- loci[- grep("cL", row.names(a)),]
 ```
