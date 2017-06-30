@@ -1,6 +1,6 @@
 # Jaltomata QTL mapping
 
-## Mapping raw reads from Novogene to tomato genome build 3.0
+# Mapping raw reads from Novogene to tomato genome build 3.0
 
 ###### Checking initial quality of reads with `fastqc`
 ```
@@ -90,15 +90,41 @@ genotypes -P /N/dc2/projects/gibsonTomato/jaltomata/rawdata/release_data/stacksO
 
 
 
-## Linkage Map
+# Linkage Map
 ###### Build linkage map in R using ASMap.
 ###### Remove problems markers using `correctGenotypes.py`
 See `jaltomataMapping_5.Rmd` for details.
 
 ###### Add in trait values
 
-## Map QTL in `R/QTL`
+# Map QTL in `R/QTL`
 See `QTL_scanning.Rmd` for details
 
+# Candidate gene search
+Identifying candidates within QTL regions via blasting marker consensus sequences to tomato.
 
+### Identifying loci in peaks for herm nectar color RGB (for all focal traits)
+```
+loci <- herm_nec_color_rgb[herm_nec_color_rgb$lod > 2.73,]
+loci <- loci[- grep("cL", row.names(a)),]
+write.table(loci, sep=",", file="herm_nec_col_RGB.loci")
+```
+
+### Gather consensus sequences for these loci
+```
+python .\getQTLMarkers.py -v -p .\consensus_seq_jalMap_6_17.fq -q .\herm_nec_col_RGB.loci.txt -o .\
+```
+`consensus_seq_jalMap_6_17.fq` is a fq file with consensus sequences for all loci on the map.
+`getQTLMarkers.py` will output fq files for all groups that contain QTL.
+
+### Blast the ITAG CDS database
+```
+blat /N/dc2/projects/gibsonTomato/genomes/itag_3.2/ITAG3.2_CDS.fasta L.3.consensus.fa output.L3.blast9 -t=
+dna -q=dna -out=blast9
+```
+
+### Parse blast output
+```
+python .\parseBlast.py -v -p .\herm_nectar_color_rgb\output.L3.blast9 -o .\herm_nectar_color_rgb\summaryL.3 -t cds -s .\herm_nectar_color_rgb\61.out.txt
+ ```
 
