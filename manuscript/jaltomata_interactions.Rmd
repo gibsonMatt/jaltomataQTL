@@ -1,0 +1,309 @@
+---
+title: "Jaltomata_interactions"
+author: "Matthew Gibson"
+date: "August 25, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(qtl)
+library(ggplot2)
+pcDir <- "~/bin/jaltomataQTL/manuscript"
+setwd(pcDir)
+```
+
+```{r}
+mapJal5.1 <- read.cross("csv",pcDir, "final_map_6_15_t.csv", genotypes=c("A", "H"), alleles=c("A", "B"), na.strings=c("-", "NA"), estimate.map=F,crosstype = "bc")
+#write.cross(mapJal5.1, format="csvr")
+#plot.map(mapJal5.1)
+names(mapJal5.1$geno) <- c('L.1', 'L.2', 'L.3', 'L.4', 'L.5', 'L.6', 'L.7', 'L.8', 'L.9', 'L.10', 'L.11', 'L.12')
+mapJal5.1$geno <- mapJal5.1$geno[c(9, 6, 3, 5, 1, 2,4,7,8,10,11,12)]
+#names(mapJal5.1$geno) <- c('L.9 (Ch.1)', 'L.6 (Ch.2)', 'L.3 (Ch.5)', 'L.5 (Ch.6)', 'L.1 (Ch.12)', 'L.2', 'L.4', 'L.7', 'L.8', 'L.10', 'L.11', 'L.12')
+names(mapJal5.1$geno) <- c('(Ch.1)', '(Ch.2)', '(Ch.5)', '(Ch.6)', '(Ch.12)', 'L.2', 'L.4', 'L.7', 'L.8', 'L.10', 'L.11', 'L.12')
+plot.map(mapJal5.1)
+```
+
+## Setup covariates
+```{r}
+bench <- pull.pheno(mapJal5.1, pheno.col = 3)
+hmorph <- pull.pheno(mapJal5.1, pheno.col=c(3, 4))
+fmorph <- pull.pheno(mapJal5.1, pheno.col=c(3, 5))
+hcolor <- pull.pheno(mapJal5.1, pheno.col=c(3, 6))
+fcolor <- pull.pheno(mapJal5.1, pheno.col=c(3, 7))
+crossed <- pull.pheno(mapJal5.1, pheno.col=c(3, 8))
+trichome <- pull.pheno(mapJal5.1, pheno.col=c(3,8))
+veg <- pull.pheno(mapJal5.1, pheno.col=c(3, 10))
+```
+
+```{r}
+#Reset the step size
+mapJal5.1 <- calc.genoprob(mapJal5.1, step=2)
+```
+
+# Quick test looking at difference between hk and em
+```{r}
+
+femMorph <- scanone(mapJal5.1, pheno.col=22, method="em", addcovar=fmorph)
+femMorph_hk <- scanone(mapJal5.1, pheno.col=22, method="hk", addcovar=fmorph)
+
+i <- 1
+threshs <- c(2.83, 2.76, 2.73)
+
+plot(femMorph, femMorph_hk)
+```
+
+
+# FEM MORPH
+```{r}
+#verify that I have the correct phenotype column
+find.pheno(mapJal5.1, "log.cor.fus.f")
+#load in the permutation results which were run on cluster
+load("./interactions/log.cor.fus.f_p")
+#calculate permuations
+pen <- calc.penalties(log.cor.fus.f_p)
+#fit QTL model
+print(log.cor.fus.f_p_ <- stepwiseqtl(mapJal5.1, pheno.col=22, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+#use the most likely model and generate summary stats on individual effects and heritability
+summary(log.cor.fus.f_p_fit <- fitqtl(mapJal5.1, pheno.col=22, log.cor.fus.f_p_, covar=fmorph, method="hk", get.ests = T))
+#graphical rep. of the model
+plotModel(log.cor.fus.f_p_)
+
+find.pheno(mapJal5.1, "cor.fus.prop.f")
+load("./interactions/cor.fus.prop.f_p")
+pen <- calc.penalties(cor.fus.prop.f_p)
+print(cor.fus.prop.f_p_ <- stepwiseqtl(mapJal5.1, pheno.col=23, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+summary(cor.fus.prop.f_p_fit <- fitqtl(mapJal5.1, pheno.col=23, cor.fus.prop.f_p_, covar=fmorph, method="hk", get.ests = T))
+plotModel(cor.fus.prop.f_p_)
+
+
+find.pheno(mapJal5.1, "anther.f")
+load("./interactions/anther.f_p")
+pen <- calc.penalties(anther.f_p)
+print(anther.f_p_ <- stepwiseqtl(mapJal5.1, pheno.col=26, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+summary(anther.f_p_fit <- fitqtl(mapJal5.1, pheno.col=26, anther.f_p_, covar=fmorph, method="hk", get.ests = T))
+plotModel(anther.f_p_)
+
+```
+
+# HERM MORPH
+```{r}
+find.pheno(mapJal5.1, "log.inflor")
+load("./interactions/log.inflor_p")
+pen <- calc.penalties(log.inflor_p)
+print(log.inflor_p_ <- stepwiseqtl(mapJal5.1, pheno.col=29, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+summary(log.inflor_p_fit <- fitqtl(mapJal5.1, pheno.col=29, log.inflor_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(log.inflor_p_)
+
+##!Calyx.h
+
+find.pheno(mapJal5.1, "sepal.h")
+load("./interactions/sepal.h_p")
+pen <- calc.penalties(sepal.h_p)
+print(sepal.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=31, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+summary(sepal.h_p_fit <- fitqtl(mapJal5.1, pheno.col=31, sepal.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(sepal.h_p_)
+
+find.pheno(mapJal5.1, "cor.dia.h")
+load("./interactions/cor.dia.h_p")
+pen <- calc.penalties(cor.dia.h_p)
+print(cor.dia.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=32, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+summary(cor.dia.h_p_fit <- fitqtl(mapJal5.1, pheno.col=32, cor.dia.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(cor.dia.h_p_)
+
+find.pheno(mapJal5.1, "cor.depth.h")
+load("./interactions/cor.depth.h_p")
+pen <- calc.penalties(cor.depth.h_p)
+print(cor.depth.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=33, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+summary(cor.depth.h_p_fit <- fitqtl(mapJal5.1, pheno.col=33, cor.depth.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(cor.depth.h_p_)
+
+find.pheno(mapJal5.1, "log.cor.fus.h")
+load("./interactions/log.cor.fus.h_p")
+pen <- calc.penalties(log.cor.fus.h_p)
+print(log.cor.fus.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=34, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+summary(log.cor.fus.h_p_fit <- fitqtl(mapJal5.1, pheno.col=34, log.cor.fus.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(log.cor.fus.h_p_)
+
+find.pheno(mapJal5.1, "cor.fus.prop.h")
+load("./interactions/cor.fus.prop.h_p")
+pen <- calc.penalties(cor.fus.prop.h_p)
+print(cor.fus.prop.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=35, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+summary(cor.fus.prop.h_p_fit <- fitqtl(mapJal5.1, pheno.col=35, cor.fus.prop.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(cor.fus.prop.h_p_)
+
+find.pheno(mapJal5.1, "log.petal.h")
+load("./interactions/log.petal.h_p")
+pen <- calc.penalties(log.petal.h_p)
+print(log.petal.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=36, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+summary(log.petal.h_p_fit <- fitqtl(mapJal5.1, pheno.col=36, log.petal.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(log.petal.h_p_)
+
+find.pheno(mapJal5.1, "stamen.h")
+load("./interactions/stamen.h_p")
+pen <- calc.penalties(stamen.h_p)
+print(stamen.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=37, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+summary(stamen.h_p_fit <- fitqtl(mapJal5.1, pheno.col=37, stamen.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(stamen.h_p_)
+
+find.pheno(mapJal5.1, "ovary.h")
+load("./interactions/ovary.h_p")
+pen <- calc.penalties(ovary.h_p)
+print(ovary.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=39, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+summary(ovary.h_p_fit <- fitqtl(mapJal5.1, pheno.col=39, ovary.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(ovary.h_p_)
+
+find.pheno(mapJal5.1, "log.style.h")
+load("./interactions/log.style.h_p")
+pen <- calc.penalties(log.style.h_p)
+print(log.style.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=40, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+summary(log.style.h_p_fit <- fitqtl(mapJal5.1, pheno.col=40, log.style.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(log.style.h_p_)
+
+find.pheno(mapJal5.1, "log.herkogamy.h_p")
+load("./interactions/log.herkogamy.h_p")
+pen <- calc.penalties(log.herkogamy.h_p)
+print(log.herkogamy.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=41, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+summary(log.herkogamy.h_p_fit <- fitqtl(mapJal5.1, pheno.col=41, log.herkogamy.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(log.herkogamy.h_p_)
+```
+
+# HERM COLOR
+
+```{r}
+find.pheno(mapJal5.1, "log.nec.vol.h")
+load("./interactions/log.nec.vol.h_p")
+pen <- calc.penalties(log.nec.vol.h_p)
+print(log.nec.vol.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=59, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+summary(log.nec.vol.h_p_fit <- fitqtl(mapJal5.1, pheno.col=59, log.nec.vol.h_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.nec.vol.h_p_)
+
+##!log.intens.h.nec
+
+find.pheno(mapJal5.1, "log.RGB.h.nec")
+load("./interactions/log.RGB.h.nec_p")
+pen <- calc.penalties(log.RGB.h.nec_p)
+print(log.RGB.h.nec_p_ <- stepwiseqtl(mapJal5.1, pheno.col=61, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+summary(log.RGB.h.nec_p_fit <- fitqtl(mapJal5.1, pheno.col=59, log.RGB.h.nec_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.RGB.h.nec_p)
+
+find.pheno(mapJal5.1, "log.G.h.nec")
+load("./interactions/log.G.h.nec_p")
+pen <- calc.penalties(log.G.h.nec_p)
+print(log.G.h.nec_p_ <- stepwiseqtl(mapJal5.1, pheno.col=63, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+summary(log.G.h.nec_p_fit <- fitqtl(mapJal5.1, pheno.col=63, log.G.h.nec_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.G.h.nec_p_)
+
+find.pheno(mapJal5.1, "log.L.h.nec")
+load("./interactions/log.L.h.nec_p")
+pen <- calc.penalties(log.L.h.nec_p)
+print(log.L.h.nec_p_ <- stepwiseqtl(mapJal5.1, pheno.col=65, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+summary(log.L.h.nec_p_fit <- fitqtl(mapJal5.1, pheno.col=65, log.L.h.nec_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.L.h.nec_p_)
+
+find.pheno(mapJal5.1, "log.a.h.nec")
+load("./interactions/log.a.h.nec_p")
+pen <- calc.penalties(log.a.h.nec_p)
+print(log.a.h.nec_p_ <- stepwiseqtl(mapJal5.1, pheno.col=66, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+summary(log.a.h.nec_p_fit <- fitqtl(mapJal5.1, pheno.col=66, log.a.h.nec_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.a.h.nec_p_)
+
+find.pheno(mapJal5.1, "log.b.h.nec")
+load("./interactions/log.b.h.nec_p")
+pen <- calc.penalties(log.b.h.nec_p)
+print(log.b.h.nec_p_ <- stepwiseqtl(mapJal5.1, pheno.col=67, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+summary(log.b.h.nec_p_fit <- fitqtl(mapJal5.1, pheno.col=67, log.b.h.nec_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.b.h.nec_p_)
+
+find.pheno(mapJal5.1, "log.intensity.h.pet")
+load("./interactions/log.intensity.h.pet_p")
+pen <- calc.penalties(log.intensity.h.pet_p)
+print(log.intensity.h.pet_p_ <- stepwiseqtl(mapJal5.1, pheno.col=68, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+summary(log.intensity.h.pet_p_fit <- fitqtl(mapJal5.1, pheno.col=68, log.intensity.h.pet_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.intensity.h.pet_p_)
+
+find.pheno(mapJal5.1, "log.L.h.pet")
+load("./interactions/log.L.h.pet_p")
+pen <- calc.penalties(log.L.h.pet_p)
+print(log.L.h.pet_p_ <- stepwiseqtl(mapJal5.1, pheno.col=73, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+summary(log.L.h.pet_p_fit <- fitqtl(mapJal5.1, pheno.col=73, log.L.h.pet_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.L.h.pet_p_)
+
+find.pheno(mapJal5.1, "log.a.h.pet")
+load("./interactions/log.a.h.pet_p")
+pen <- calc.penalties(log.a.h.pet_p)
+print(log.a.h.pet_p_ <- stepwiseqtl(mapJal5.1, pheno.col=74, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+summary(log.a.h.pet_p_fit <- fitqtl(mapJal5.1, pheno.col=74, log.a.h.pet_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.a.h.pet_p_)
+
+```
+
+# FERTILITY AND FRUIT
+```{r}
+find.pheno(mapJal5.1, "log.fruit.mass")
+load("./interactions/log.fruit.mass_p")
+pen <- calc.penalties(log.fruit.mass_p)
+print(log.fruit.mass_p_ <- stepwiseqtl(mapJal5.1, pheno.col=77, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=crossed))
+summary(log.fruit.mass_p_fit <- fitqtl(mapJal5.1, pheno.col=77, log.fruit.mass_p_, covar=crossed, method="hk", get.ests = T))
+plotModel(log.fruit.mass_p_)
+
+find.pheno(mapJal5.1, "log.via.seed")
+load("./interactions/log.via.seed_p")
+pen <- calc.penalties(log.via.seed_p)
+print(log.via.seed_p_ <- stepwiseqtl(mapJal5.1, pheno.col=80, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=crossed))
+summary(log.via.seed_p_fit <- fitqtl(mapJal5.1, pheno.col=80, log.via.seed_p_, covar=crossed, method="hk", get.ests = T))
+plotModel(log.via.seed_p_)
+
+### !!!!!! ###
+#find.pheno(mapJal5.1, "log.seed.MGT")
+#load("./interactions/log.seed.MGT_p")
+#pen <- calc.penalties(log.seed.MGT_p)
+#print(log.seed.MGT_p_ <- stepwiseqtl(mapJal5.1, pheno.col=82, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=crossed))
+#summary(log.seed.MGT_p_fit <- fitqtl(mapJal5.1, pheno.col=82, log.seed.MGT_p_, covar=crossed, method="hk", get.ests = T))
+#plotModel(log.seed.MGT_p_)
+### !!!!!! ###
+#Note: For log.seed.MGT, the stepwise fitting identified a null model...I do not know how to interpret this since we did see a QTL in the scanone results...
+
+
+```
+
+# MORPH PCs
+```{r}
+load("./interactions/pc1.f_p")
+pen <- calc.penalties(pc1.f_p)
+print(pc1.f_p_ <- stepwiseqtl(mapJal5.1, pheno.col=90, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+summary(pc1.f_p_fit <- fitqtl(mapJal5.1, pheno.col=90, pc1.f_p_, covar=fmorph, method="hk", get.ests = T))
+plotModel(pc1.f_p_)
+
+load("./interactions/pc2.f_p")
+pen <- calc.penalties(pc2.f_p)
+print(pc2.f_p_ <- stepwiseqtl(mapJal5.1, pheno.col=91, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+summary(pc2.f_p_fit <- fitqtl(mapJal5.1, pheno.col=91, pc2.f_p_, covar=fmorph, method="hk", get.ests = T))
+plotModel(pc2.f_p_)
+
+load("./interactions/pc3.f_p")
+pen <- calc.penalties(pc3.f_p)
+print(pc3.f_p_ <- stepwiseqtl(mapJal5.1, pheno.col=92, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+summary(pc3.f_p_fit <- fitqtl(mapJal5.1, pheno.col=92, pc3.f_p_, covar=fmorph, method="hk", get.ests = T))
+plotModel(pc3.f_p_)
+
+load("./interactions/pc1.h_p")
+pen <- calc.penalties(pc1.h_p)
+print(pc1.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=93, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+summary(pc1.h_p_fit <- fitqtl(mapJal5.1, pheno.col=93, pc1.h_p_, covar=hmorph, method="hk", get.ests = T))
+
+plotModel(pc1.h_p_)
+
+load("./interactions/pc2.h_p")
+pen <- calc.penalties(pc2.h_p)
+print(pc2.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=94, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+summary(pc2.h_p_fit <- fitqtl(mapJal5.1, pheno.col=94, pc2.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(pc2.h_p_)
+
+load("./interactions/pc3.h_p")
+pen <- calc.penalties(pc3.h_p)
+print(pc3.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=95, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+summary(pc3.h_p_fit <- fitqtl(mapJal5.1, pheno.col=95, pc3.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(pc3.h_p_)
+
+```
