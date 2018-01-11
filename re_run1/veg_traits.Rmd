@@ -1,0 +1,163 @@
+---
+title: "Veg traits"
+author: "Matthew Gibson"
+date: "September 21, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(qtl)
+library(ggplot2)
+pcDir <- "~/bin/jaltomataQTL/re_run1"
+setwd(pcDir)
+```
+
+
+```{r, warning=F}
+mapJal5.1 <- read.cross("csv",pcDir, "final_map_6_15_t.csv", genotypes=c("A", "H"), alleles=c("A", "B"), na.strings=c("-", "NA"), estimate.map=F,crosstype = "bc")
+#write.cross(mapJal5.1, format="csvr")
+#plot.map(mapJal5.1)
+names(mapJal5.1$geno) <- c('L.1', 'L.2', 'L.3', 'L.4', 'L.5', 'L.6', 'L.7', 'L.8', 'L.9', 'L.10', 'L.11', 'L.12')
+mapJal5.1$geno <- mapJal5.1$geno[c(9, 6, 3, 5, 1, 2,4,7,8,10,11,12)]
+#names(mapJal5.1$geno) <- c('L.9 (Ch.1)', 'L.6 (Ch.2)', 'L.3 (Ch.5)', 'L.5 (Ch.6)', 'L.1 (Ch.12)', 'L.2', 'L.4', 'L.7', 'L.8', 'L.10', 'L.11', 'L.12')
+names(mapJal5.1$geno) <- c('(Ch.1)', '(Ch.2)', '(Ch.5)', '(Ch.6)', '(Ch.12)', 'L.2', 'L.4', 'L.7', 'L.8', 'L.10', 'L.11', 'L.12')
+plot.map(mapJal5.1)
+```
+
+
+## Setup covariates
+```{r, warning=F}
+bench <- pull.pheno(mapJal5.1, pheno.col = 3)
+hmorph <- pull.pheno(mapJal5.1, pheno.col=c(3, 4))
+fmorph <- pull.pheno(mapJal5.1, pheno.col=c(3, 5))
+hcolor <- pull.pheno(mapJal5.1, pheno.col=c(3, 6))
+fcolor <- pull.pheno(mapJal5.1, pheno.col=c(3, 7))
+crossed <- pull.pheno(mapJal5.1, pheno.col=c(3, 8))
+trichome <- pull.pheno(mapJal5.1, pheno.col=c(3,8))
+veg <- pull.pheno(mapJal5.1, pheno.col=c(3, 10))
+```
+
+```{r, warning=F}
+#Reset the step size
+mapJal5.1 <- calc.genoprob(mapJal5.1, step=2)
+```
+
+### Seedling trichome density
+```{r, warning=F}
+seedling_trichome_desnity<- scanone(mapJal5.1, pheno.col=11, method='hk', model="binary",addcovar=trichome)
+plot(seedling_trichome_desnity)
+abline(2.76,0)
+
+#Why didn't I run the scantwo for this?
+#load("./scanTwo_objects/log.cor.fus.f_p")
+```
+
+
+### Mature lamina length
+```{r, warning=F}
+mat_lam_length<- scanone(mapJal5.1, pheno.col=12, method='hk', addcovar=veg)
+
+plot(mat_lam_length)
+abline(2.75,0)
+
+load("./scanTwo_objects/mat_lam_length_p")
+
+pen <- calc.penalties(mat_lam_length_p)
+#fit QTL model
+print(mat_lam_length_p_ <- stepwiseqtl(mapJal5.1, pheno.col=12, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+#use the most likely model and generate summary stats on individual effects and heritability
+summary(mat_lam_length_p_fit <- fitqtl(mapJal5.1, pheno.col=12, mat_lam_length_p_, covar=fmorph, method="hk", get.ests = T))
+#graphical rep. of the model
+plotModel(mat_lam_length_p_)
+
+```
+
+### Mature lamina width
+```{r, warning=F}
+mat_lam_width<- scanone(mapJal5.1, pheno.col=13, method='hk', addcovar=veg)
+plot(mat_lam_width)
+abline(2.68,0)
+
+load("./scanTwo_objects/mat_lam_width_p")
+
+pen <- calc.penalties(mat_lam_width_p)
+#fit QTL model
+print(mat_lam_width_p_ <- stepwiseqtl(mapJal5.1, pheno.col=13, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+#use the most likely model and generate summary stats on individual effects and heritability
+#summary(mat_lam_width_p_fit <- fitqtl(mapJal5.1, pheno.col=13, mat_lam_width_p_, covar=fmorph, method="hk", get.ests = T))
+#graphical rep. of the model
+plotModel(mat_lam_width_p_)
+
+```
+
+### Mature petiole length
+```{r, warning=F}
+mat_petiole_length<- scanone(mapJal5.1, pheno.col=14, method='hk', addcovar=veg)
+plot(mat_petiole_length)
+abline(2.83,0)
+load("./scanTwo_objects/mat_petiole_length_p")
+
+pen <- calc.penalties(mat_petiole_length_p)
+#fit QTL model
+print(mat_petiole_length_p_ <- stepwiseqtl(mapJal5.1, pheno.col=14, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+#use the most likely model and generate summary stats on individual effects and heritability
+#summary(mat_petiole_length_p_fit <- fitqtl(mapJal5.1, pheno.col=14, mat_petiole_length_p_, covar=fmorph, method="hk", get.ests = T))
+#graphical rep. of the model
+plotModel(mat_petiole_length_p_)
+
+```
+
+### Mature leaf area
+```{r, warning=F}
+mat_leaf_area<- scanone(mapJal5.1, pheno.col=15, method='hk', addcovar=veg)
+plot(mat_leaf_area)
+abline(2.78,0)
+
+load("./scanTwo_objects/mat_leaf_area_p")
+
+pen <- calc.penalties(mat_leaf_area_p)
+#fit QTL model
+print(mat_leaf_area_p_ <- stepwiseqtl(mapJal5.1, pheno.col=15, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+#use the most likely model and generate summary stats on individual effects and heritability
+summary(mat_leaf_area_p_fit <- fitqtl(mapJal5.1, pheno.col=15, mat_leaf_area_p_, covar=fmorph, method="hk", get.ests = T))
+#graphical rep. of the model
+plotModel(mat_leaf_area_p_)
+
+```
+
+### Mature lamina area
+```{r, warning=F}
+mat_lam_area<- scanone(mapJal5.1, pheno.col=16, method='hk', addcovar=veg)
+plot(mat_lam_area)
+abline(2.71, 0)
+
+load("./scanTwo_objects/mat_lam_area_p")
+
+pen <- calc.penalties(mat_lam_area_p)
+#fit QTL model
+print(mat_lam_area_p_ <- stepwiseqtl(mapJal5.1, pheno.col=16, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+#use the most likely model and generate summary stats on individual effects and heritability
+summary(mat_lam_area_p_fit <- fitqtl(mapJal5.1, pheno.col=16, mat_lam_area_p_, covar=fmorph, method="hk", get.ests = T))
+#graphical rep. of the model
+plotModel(mat_lam_area_p_)
+```
+
+### Mature leaf trichome count
+```{r, warning=F}
+mat_leaf_tric_cnt<- scanone(mapJal5.1, pheno.col=17, method='hk', addcovar=trichome)
+plot(mat_leaf_tric_cnt)
+abline(2.66, 0)
+
+load("./scanTwo_objects/mat_leaf_tric_cnt_p")
+
+pen <- calc.penalties(mat_leaf_tric_cnt_p)
+#fit QTL model
+print(mat_leaf_tric_cnt_p_ <- stepwiseqtl(mapJal5.1, pheno.col=17, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+#use the most likely model and generate summary stats on individual effects and heritability
+#summary(mat_leaf_tric_cnt_p_fit <- fitqtl(mapJal5.1, pheno.col=17, mat_leaf_tric_cnt_p_, covar=fmorph, method="hk", get.ests = T))
+#graphical rep. of the model
+plotModel(mat_leaf_tric_cnt_p_)
+```
+
+

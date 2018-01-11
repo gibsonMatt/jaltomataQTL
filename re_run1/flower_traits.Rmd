@@ -1,0 +1,1107 @@
+---
+title: "Flower traits"
+author: "Matthew Gibson"
+date: "September 25, 2017"
+output: pdf_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache=TRUE)
+library(qtl)
+library(ggplot2)
+pcDir <- "~/bin/jaltomataQTL/re_run1"
+setwd(pcDir)
+```
+
+
+
+
+
+```{r, warning=F}
+mapJal5.1 <- read.cross("csv",pcDir, "final_map_6_15_t.csv", genotypes=c("A", "H"), alleles=c("A", "B"), na.strings=c("-", "NA"), estimate.map=F,crosstype = "bc")
+#write.cross(mapJal5.1, format="csvr")
+#plot.map(mapJal5.1)
+names(mapJal5.1$geno) <- c('L.1', 'L.2', 'L.3', 'L.4', 'L.5', 'L.6', 'L.7', 'L.8', 'L.9', 'L.10', 'L.11', 'L.12')
+mapJal5.1$geno <- mapJal5.1$geno[c(9, 6, 3, 5, 1, 2,4,7,8,10,11,12)]
+#names(mapJal5.1$geno) <- c('L.9 (Ch.1)', 'L.6 (Ch.2)', 'L.3 (Ch.5)', 'L.5 (Ch.6)', 'L.1 (Ch.12)', 'L.2', 'L.4', 'L.7', 'L.8', 'L.10', 'L.11', 'L.12')
+names(mapJal5.1$geno) <- c('(Ch.1)', '(Ch.2)', '(Ch.5)', '(Ch.6)', '(Ch.12)', 'L.2', 'L.4', 'L.7', 'L.8', 'L.10', 'L.11', 'L.12')
+plot.map(mapJal5.1)
+```
+
+
+## Setup covariates
+```{r, warning=F}
+bench <- pull.pheno(mapJal5.1, pheno.col = 3)
+hmorph <- pull.pheno(mapJal5.1, pheno.col=c(3, 4))
+fmorph <- pull.pheno(mapJal5.1, pheno.col=c(3, 5))
+hcolor <- pull.pheno(mapJal5.1, pheno.col=c(3, 6))
+fcolor <- pull.pheno(mapJal5.1, pheno.col=c(3, 7))
+crossed <- pull.pheno(mapJal5.1, pheno.col=c(3, 8))
+trichome <- pull.pheno(mapJal5.1, pheno.col=c(3,8))
+veg <- pull.pheno(mapJal5.1, pheno.col=c(3, 10))
+```
+
+```{r, warning=F}
+#Reset the step size
+mapJal5.1 <- calc.genoprob(mapJal5.1, step=1)
+```
+
+## QTL Scan
+### Calyx diameter female
+```{r}
+calyx.f<- scanone(mapJal5.1, pheno.col=18, method='hk', addcovar=fmorph)
+plot(calyx.f)
+abline(2.75,0)
+
+load("./scanTwo_objects/calyx.f_p")
+pen <- calc.penalties(calyx.f_p)
+print(calyx.f_p_ <- stepwiseqtl(mapJal5.1, pheno.col=18, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+
+summary(calyx.f_p_fit <- fitqtl(mapJal5.1, pheno.col=18, calyx.f_p_, covar=fmorph, method="hk", get.ests = T))
+plotModel(calyx.f_p_)
+```
+
+### Sepal diameter female
+```{r}
+sepal.f<- scanone(mapJal5.1, pheno.col=19, method='hk', addcovar=fmorph)
+plot(sepal.f)
+abline(2.88,0)
+
+#Didn't do scanTwo?
+
+```
+
+### Corolla diameter female
+```{r}
+cor.dia.f<- scanone(mapJal5.1, pheno.col=20, method='hk', addcovar=fmorph)
+plot(cor.dia.f)
+abline(2.76,0)
+
+load("./scanTwo_objects/cor.dia.f_p")
+pen <- calc.penalties(cor.dia.f_p)
+print(cor.dia.f_p_ <- stepwiseqtl(mapJal5.1, pheno.col=20, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+
+summary(cor.dia.f_p_fit <- fitqtl(mapJal5.1, pheno.col=20, cor.dia.f_p_, covar=fmorph, method="hk", get.ests = T))
+plotModel(cor.dia.f_p_)
+```
+
+### Corolla depth female
+```{r}
+cor.depth.f<- scanone(mapJal5.1, pheno.col=21, method='hk', addcovar=fmorph)
+plot(cor.depth.f)
+abline(2.78,0)
+
+load("./scanTwo_objects/cor.depth.f_p")
+pen <- calc.penalties(cor.depth.f_p)
+print(cor.depth.f_p_ <- stepwiseqtl(mapJal5.1, pheno.col=21, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+
+summary(cor.depth.f_p_fit <- fitqtl(mapJal5.1, pheno.col=21, cor.depth.f_p_, covar=fmorph, method="hk", get.ests = T))
+plotModel(cor.depth.f_p_)
+```
+
+### Log corolla fusion female
+```{r}
+log.cor.fus.f<- scanone(mapJal5.1, pheno.col=22, method='hk', addcovar=fmorph)
+plot(log.cor.fus.f)
+abline(2.70,0)
+
+load("./scanTwo_objects/log.cor.fus.f_p")
+pen <- calc.penalties(log.cor.fus.f_p)
+print(log.cor.fus.f_p_ <- stepwiseqtl(mapJal5.1, pheno.col=22, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+
+summary(log.cor.fus.f_p_fit <- fitqtl(mapJal5.1, pheno.col=22, log.cor.fus.f_p_, covar=fmorph, method="hk", get.ests = T))
+plotModel(log.cor.fus.f_p_)
+```
+
+### Corolla fusion proportion female
+```{r}
+cor.fus.prop.f<- scanone(mapJal5.1, pheno.col=23, method='hk', addcovar=fmorph)
+plot(cor.fus.prop.f)
+abline(2.88,0)
+
+load("./scanTwo_objects/cor.fus.prop.f_p")
+pen <- calc.penalties(cor.fus.prop.f_p)
+print(cor.fus.prop.f_p_ <- stepwiseqtl(mapJal5.1, pheno.col=23, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+
+summary(cor.fus.prop.f_p_fit <- fitqtl(mapJal5.1, pheno.col=23, cor.fus.prop.f_p_, covar=fmorph, method="hk", get.ests = T))
+plotModel(cor.fus.prop.f_p_)
+```
+
+### Log petal length female
+```{r}
+log.petal.f<- scanone(mapJal5.1, pheno.col=24, method='hk', addcovar=fmorph)
+plot(log.petal.f)
+abline(2.88,0)
+
+load("./scanTwo_objects/log.petal.f_p")
+pen <- calc.penalties(log.petal.f_p)
+print(log.petal.f_p_ <- stepwiseqtl(mapJal5.1, pheno.col=24, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+
+summary(log.petal.f_p_fit <- fitqtl(mapJal5.1, pheno.col=24, log.petal.f_p_, covar=fmorph, method="hk", get.ests = T))
+plotModel(log.petal.f_p_)
+```
+
+### Stamen length female
+```{r}
+stamen.f<- scanone(mapJal5.1, pheno.col=25, method='hk', addcovar=fmorph)
+plot(stamen.f)
+abline(2.86,0)
+
+#Didn't run scantwo?
+```
+
+### Anther length female
+```{r}
+anther.f<- scanone(mapJal5.1, pheno.col=26, method='hk', addcovar=fmorph)
+plot(anther.f)
+abline(2.73,0)
+
+load("./scanTwo_objects/anther.f_p")
+pen <- calc.penalties(anther.f_p)
+print(anther.f_p_ <- stepwiseqtl(mapJal5.1, pheno.col=26, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+
+summary(anther.f_p_fit <- fitqtl(mapJal5.1, pheno.col=26, anther.f_p_, covar=fmorph, method="hk", get.ests = T))
+plotModel(anther.f_p_)
+```
+
+### Ovary length female
+```{r}
+ovary.f<- scanone(mapJal5.1, pheno.col=27, method='hk', addcovar=fmorph)
+plot(ovary.f)
+abline(2.74,0)
+
+load("./scanTwo_objects/ovary.f_p")
+pen <- calc.penalties(ovary.f_p)
+print(ovary.f_p_ <- stepwiseqtl(mapJal5.1, pheno.col=27, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+
+summary(ovary.f_p_fit <- fitqtl(mapJal5.1, pheno.col=27, ovary.f_p_, covar=fmorph, method="hk", get.ests = T))
+plotModel(ovary.f_p_)
+```
+
+### Log Style length female
+```{r}
+log.style.f<- scanone(mapJal5.1, pheno.col=28, method='hk', addcovar=fmorph)
+plot(log.style.f)
+abline(2.80,0)
+
+load("./scanTwo_objects/log.style.f_p")
+pen <- calc.penalties(log.style.f_p)
+print(log.style.f_p_ <- stepwiseqtl(mapJal5.1, pheno.col=28, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+
+summary(log.style.f_p_fit <- fitqtl(mapJal5.1, pheno.col=28, log.style.f_p_, covar=fmorph, method="hk", get.ests = T))
+plotModel(log.style.f_p_)
+```
+
+### Log inflor length female
+```{r}
+log.inflor<- scanone(mapJal5.1, pheno.col=29, method='hk', addcovar=fmorph)
+plot(log.inflor)
+abline(2.78,0)
+
+load("./scanTwo_objects/log.inflor_p")
+pen <- calc.penalties(log.inflor_p)
+print(log.inflor_p_ <- stepwiseqtl(mapJal5.1, pheno.col=29, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+
+summary(log.inflor_p_fit <- fitqtl(mapJal5.1, pheno.col=29, log.inflor_p_, covar=fmorph, method="hk", get.ests = T))
+plotModel(log.inflor_p_)
+```
+
+### Calyx length herm
+```{r}
+calyx.h<- scanone(mapJal5.1, pheno.col=30, method='hk', addcovar=hmorph)
+plot(calyx.h)
+abline(2.85,0)
+
+load("./scanTwo_objects/calyx.h_p")
+pen <- calc.penalties(calyx.h_p)
+print(calyx.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=30, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+
+summary(calyx.h_p_fit <- fitqtl(mapJal5.1, pheno.col=30, calyx.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(calyx.h_p_)
+```
+
+### Sepal length herm !!
+```{r}
+sepal.h<- scanone(mapJal5.1, pheno.col=31, method='hk', addcovar=hmorph)
+plot(sepal.h)
+abline(2.69,0)
+
+#Didn't do scanTwo?
+```
+
+### Corolla diameter herm
+```{r}
+cor.dia.h<- scanone(mapJal5.1, pheno.col=32, method='hk', addcovar=hmorph)
+plot(cor.dia.h)
+abline(2.78,0)
+
+load("./scanTwo_objects/cor.dia.h_p")
+pen <- calc.penalties(cor.dia.h_p)
+print(cor.dia.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=32, max.qtl=8, penalties=pen, method="hk", verbose=T, keeptrace = T,additive.only = T,covar=hmorph))
+
+
+
+summary(cor.dia.h_p_fit <- fitqtl(mapJal5.1, pheno.col=32, cor.dia.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(cor.dia.h_p_)
+
+```
+
+### Corolla depth herm
+```{r}
+cor.depth.h<- scanone(mapJal5.1, pheno.col=33, method='hk', addcovar=hmorph)
+plot(cor.depth.h)
+abline(2.69,0)
+
+load("./scanTwo_objects/cor.depth.h_p")
+pen <- calc.penalties(cor.depth.h_p)
+print(cor.depth.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=33, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+
+summary(cor.depth.h_p_fit <- fitqtl(mapJal5.1, pheno.col=33, cor.depth.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(cor.depth.h_p_)
+```
+
+### Log corolla fusion herm
+```{r}
+log.cor.fus.h<- scanone(mapJal5.1, pheno.col=34, method='hk', addcovar=hmorph)
+plot(log.cor.fus.h)
+abline(2.78,0)
+
+load("./scanTwo_objects/log.cor.fus.h_p")
+pen <- calc.penalties(log.cor.fus.h_p)
+print(log.cor.fus.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=34, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+
+summary(log.cor.fus.h_p_fit <- fitqtl(mapJal5.1, pheno.col=34, log.cor.fus.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(log.cor.fus.h_p_)
+```
+
+### Log corolla fusion herm
+```{r}
+cor.fus.prop.h<- scanone(mapJal5.1, pheno.col=35, method='hk', addcovar=hmorph)
+plot(cor.fus.prop.h)
+abline(2.8,0)
+
+load("./scanTwo_objects/cor.fus.prop.h_p")
+pen <- calc.penalties(cor.fus.prop.h_p)
+print(cor.fus.prop.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=35, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+
+summary(cor.fus.prop.h_p_fit <- fitqtl(mapJal5.1, pheno.col=35, cor.fus.prop.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(cor.fus.prop.h_p_)
+```
+
+### Log corolla fusion herm
+```{r}
+log.petal.h<- scanone(mapJal5.1, pheno.col=36, method='hk', addcovar=hmorph)
+plot(log.petal.h)
+abline(2.79,0)
+
+load("./scanTwo_objects/log.petal.h_p")
+pen <- calc.penalties(log.petal.h_p)
+print(log.petal.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=36, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+
+summary(log.petal.h_p_fit <- fitqtl(mapJal5.1, pheno.col=36, log.petal.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(log.petal.h_p_)
+```
+
+### Stamen length herm
+```{r}
+stamen.h<- scanone(mapJal5.1, pheno.col=37, method='hk', addcovar=hmorph)
+plot(stamen.h)
+abline(2.78,0)
+
+
+```
+
+### Anther length herm
+```{r}
+anther.h<- scanone(mapJal5.1, pheno.col=38, method='hk', addcovar=hmorph)
+plot(anther.h)
+abline(2.76,0)
+
+load("./scanTwo_objects/anther.h_p")
+pen <- calc.penalties(anther.h_p)
+print(anther.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=38, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+
+#NULL
+
+#summary(anther.h_p_fit <- fitqtl(mapJal5.1, pheno.col=38, anther.h_p_, covar=hmorph, method="hk", get.ests = T))
+#plotModel(anther.h_p_)
+```
+
+### Ovary length herm
+```{r}
+ovary.h<- scanone(mapJal5.1, pheno.col=39, method='hk', addcovar=hmorph)
+plot(ovary.h)
+abline(2.72,0)
+
+load("./scanTwo_objects/ovary.h_p")
+pen <- calc.penalties(ovary.h_p)
+print(ovary.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=39, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+
+summary(ovary.h_p_fit <- fitqtl(mapJal5.1, pheno.col=39, ovary.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(ovary.h_p_)
+```
+
+### Log style length herm
+```{r}
+log.style.h<- scanone(mapJal5.1, pheno.col=40, method='hk', addcovar=hmorph)
+plot(log.style.h)
+abline(2.78,0)
+
+load("./scanTwo_objects/log.style.h_p")
+pen <- calc.penalties(log.style.h_p)
+print(log.style.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=40, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+
+summary(log.style.h_p_fit <- fitqtl(mapJal5.1, pheno.col=40, log.style.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(log.style.h_p_)
+```
+
+### Log herkogamy herm
+```{r}
+log.herkogamy<- scanone(mapJal5.1, pheno.col=41, method='hk', addcovar=hmorph)
+plot(log.herkogamy)
+abline(2.68,0)
+
+load("./scanTwo_objects/log.herkogamy_p")
+pen <- calc.penalties(log.herkogamy_p)
+print(log.herkogamy_p_ <- stepwiseqtl(mapJal5.1, pheno.col=41, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+
+summary(log.herkogamy_p_fit <- fitqtl(mapJal5.1, pheno.col=41, log.herkogamy_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(log.herkogamy_p_)
+```
+
+### Log nectar volume female
+```{r}
+log.nec.vol.f<- scanone(mapJal5.1, pheno.col=42, method='hk', addcovar=fcolor)
+plot(log.nec.vol.f)
+abline(2.76,0)
+
+load("./scanTwo_objects/log.nec.vol.f_p")
+pen <- calc.penalties(log.nec.vol.f_p)
+print(log.nec.vol.f_p_ <- stepwiseqtl(mapJal5.1, pheno.col=42, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fcolor))
+
+summary(log.nec.vol.f_p_fit <- fitqtl(mapJal5.1, pheno.col=42, log.nec.vol.f_p_, covar=fcolor, method="hk", get.ests = T))
+plotModel(log.nec.vol.f_p_)
+```
+
+### Log nectar intensity female
+```{r}
+log.intensity.f.nec<- scanone(mapJal5.1, pheno.col=43, method='hk', addcovar=fcolor)
+plot(log.intensity.f.nec)
+abline(2.67,0)
+
+load("./scanTwo_objects/log.intensity.f.nec_p")
+pen <- calc.penalties(log.intensity.f.nec_p)
+print(log.intensity.f.nec_p_ <- stepwiseqtl(mapJal5.1, pheno.col=43, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fcolor))
+
+summary(log.intensity.f.nec_p_fit <- fitqtl(mapJal5.1, pheno.col=43, log.intensity.f.nec_p_, covar=fcolor, method="hk", get.ests = T))
+plotModel(log.intensity.f.nec_p_)
+```
+
+### Log nectar 'RGB' female
+```{r}
+log.RGB.f.nec<- scanone(mapJal5.1, pheno.col=44, method='hk', addcovar=fcolor)
+plot(log.RGB.f.nec)
+abline(2.78,0)
+
+load("./scanTwo_objects/log.RGB.f.nec_p")
+pen <- calc.penalties(log.RGB.f.nec_p)
+print(log.RGB.f.nec_p_ <- stepwiseqtl(mapJal5.1, pheno.col=44, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fcolor))
+
+summary(log.RGB.f.nec_p_fit <- fitqtl(mapJal5.1, pheno.col=44, log.RGB.f.nec_p_, covar=fcolor, method="hk", get.ests = T))
+plotModel(log.RGB.f.nec_p_)
+```
+
+### Log nectar 'R' female
+```{r}
+log.R.f.nec<- scanone(mapJal5.1, pheno.col=45, method='hk', addcovar=fcolor)
+plot(log.R.f.nec)
+abline(2.78,0)
+
+#load("./scanTwo_objects/log.R.f.nec_p")
+#pen <- calc.penalties(log.R.f.nec_p)
+#print(log.R.f.nec_p_ <- stepwiseqtl(mapJal5.1, pheno.col=45, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fcolor))
+
+#summary(log.R.f.nec_p_fit <- fitqtl(mapJal5.1, pheno.col=45, log.R.f.nec_p_, covar=fcolor, method="hk", get.ests = T))
+#plotModel(log.R.f.nec_p_)
+```
+
+### Log nectar 'G' female
+```{r}
+log.G.f.nec<- scanone(mapJal5.1, pheno.col=46, method='hk', addcovar=fcolor)
+plot(log.G.f.nec)
+abline(2.61,0)
+
+#load("./scanTwo_objects/log.G.f.nec_p")
+#pen <- calc.penalties(log.G.f.nec_p)
+#print(log.G.f.nec_p_ <- stepwiseqtl(mapJal5.1, pheno.col=46, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fcolor))
+
+#summary(log.G.f.nec_p_fit <- fitqtl(mapJal5.1, pheno.col=46, log.G.f.nec_p_, covar=fcolor, method="hk", get.ests = T))
+#plotModel(log.G.f.nec_p_)
+```
+
+### Log nectar 'B' female
+```{r}
+log.B.f.nec<- scanone(mapJal5.1, pheno.col=47, method='hk', addcovar=fcolor)
+plot(log.B.f.nec)
+abline(2.72,0)
+
+load("./scanTwo_objects/log.B.f.nec_p")
+pen <- calc.penalties(log.B.f.nec_p)
+print(log.B.f.nec_p_ <- stepwiseqtl(mapJal5.1, pheno.col=47, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fcolor))
+
+summary(log.B.f.nec_p_fit <- fitqtl(mapJal5.1, pheno.col=47, log.B.f.nec_p_, covar=fcolor, method="hk", get.ests = T))
+plotModel(log.B.f.nec_p_)
+```
+
+### Log nectar 'L' female !!
+```{r}
+log.L.f.nec<- scanone(mapJal5.1, pheno.col=48, method='hk', addcovar=fcolor)
+plot(log.L.f.nec)
+abline(2.80,0)
+
+#load("./scanTwo_objects/log.L.f.nec_p")
+#pen <- calc.penalties(log.L.f.nec_p)
+#print(log.L.f.nec_p_ <- stepwiseqtl(mapJal5.1, pheno.col=48, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fcolor))
+
+#summary(log.L.f.nec_p_fit <- fitqtl(mapJal5.1, pheno.col=48, log.L.f.nec_p_, covar=fcolor, method="hk", get.ests = T))
+#plotModel(log.L.f.nec_p_)
+```
+
+### Log nectar 'a' female
+```{r}
+log.a.f.nec<- scanone(mapJal5.1, pheno.col=49, method='hk', addcovar=fcolor)
+plot(log.a.f.nec)
+abline(2.70,0)
+
+#load("./scanTwo_objects/log.a.f.nec_p")
+#pen <- calc.penalties(log.a.f.nec_p)
+#print(log.a.f.nec_p_ <- stepwiseqtl(mapJal5.1, pheno.col=49, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fcolor))
+
+#summary(log.a.f.nec_p_fit <- fitqtl(mapJal5.1, pheno.col=49, log.a.f.nec_p_, covar=fcolor, method="hk", get.ests = T))
+#plotModel(log.a.f.nec_p_)
+
+#Was singlulat
+```
+
+### Log nectar 'b' female
+```{r}
+log.b.f.nec<- scanone(mapJal5.1, pheno.col=50, method='hk', addcovar=fcolor)
+plot(log.b.f.nec)
+abline(2.76,0)
+
+load("./scanTwo_objects/log.b.f.nec_p")
+pen <- calc.penalties(log.b.f.nec_p)
+print(log.b.f.nec_p_ <- stepwiseqtl(mapJal5.1, pheno.col=50, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fcolor))
+
+summary(log.b.f.nec_p_fit <- fitqtl(mapJal5.1, pheno.col=50, log.b.f.nec_p_, covar=fcolor, method="hk", get.ests = T))
+plotModel(log.b.f.nec_p_)
+```
+
+### Log petal intensity female
+```{r}
+log.intensity.f.pet<- scanone(mapJal5.1, pheno.col=51, method='hk', addcovar=fcolor)
+plot(log.intensity.f.pet)
+abline(2.8,0)
+
+load("./scanTwo_objects/log.intensity.f.pet_p")
+pen <- calc.penalties(log.intensity.f.pet_p)
+print(log.intensity.f.pet_p_ <- stepwiseqtl(mapJal5.1, pheno.col=51, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fcolor))
+
+summary(log.intensity.f.pet_p_fit <- fitqtl(mapJal5.1, pheno.col=51, log.intensity.f.pet_p_, covar=fcolor, method="hk", get.ests = T))
+plotModel(log.intensity.f.pet_p_)
+```
+
+### Log petal 'RGB' female
+```{r}
+log.RGB.f.pet<- scanone(mapJal5.1, pheno.col=52, method='hk', addcovar=fcolor)
+plot(log.RGB.f.pet)
+abline(2.74,0)
+
+#load("./scanTwo_objects/log.RGB.f.pet_p")
+#pen <- calc.penalties(log.RGB.f.pet_p)
+#print(log.RGB.f.pet_p_ <- stepwiseqtl(mapJal5.1, pheno.col=52, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fcolor))
+
+#summary(log.RGB.f.pet_p_fit <- fitqtl(mapJal5.1, pheno.col=52, log.RGB.f.pet_p_, covar=fcolor, method="hk", get.ests = T))
+#plotModel(log.RGB.f.pet_p_)
+```
+
+### Log petal 'R' female
+```{r}
+log.R.f.pet<- scanone(mapJal5.1, pheno.col=53, method='hk', addcovar=fcolor)
+plot(log.R.f.pet)
+abline(2.78,0)
+
+load("./scanTwo_objects/log.R.f.pet_p")
+pen <- calc.penalties(log.R.f.pet_p)
+print(log.R.f.pet_p_ <- stepwiseqtl(mapJal5.1, pheno.col=53, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fcolor))
+
+summary(log.R.f.pet_p_fit <- fitqtl(mapJal5.1, pheno.col=53, log.R.f.pet_p_, covar=fcolor, method="hk", get.ests = T))
+plotModel(log.R.f.pet_p_)
+```
+
+### Log petal 'G' female
+```{r}
+log.G.f.pet<- scanone(mapJal5.1, pheno.col=54, method='hk', addcovar=fcolor)
+plot(log.G.f.pet)
+abline(2.74,0)
+
+load("./scanTwo_objects/log.G.f.pet_p")
+pen <- calc.penalties(log.G.f.pet_p)
+print(log.G.f.pet_p_ <- stepwiseqtl(mapJal5.1, pheno.col=54, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fcolor))
+
+summary(log.G.f.pet_p_fit <- fitqtl(mapJal5.1, pheno.col=54, log.G.f.pet_p_, covar=fcolor, method="hk", get.ests = T))
+plotModel(log.G.f.pet_p_)
+```
+
+### Log petal 'B' female
+```{r}
+log.B.f.pet<- scanone(mapJal5.1, pheno.col=55, method='hk', addcovar=fcolor)
+plot(log.B.f.pet)
+abline(2.78,0)
+
+#load("./scanTwo_objects/log.B.f.pet_p")
+#pen <- calc.penalties(log.B.f.pet_p)
+#print(log.B.f.pet_p_ <- stepwiseqtl(mapJal5.1, pheno.col=55, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fcolor))
+
+#summary(log.B.f.pet_p_fit <- fitqtl(mapJal5.1, pheno.col=55, log.B.f.pet_p_, covar=fcolor, method="hk", get.ests = T))
+#plotModel(log.B.f.pet_p_)
+```
+
+### Log petal 'L' female
+```{r}
+log.L.f.pet<- scanone(mapJal5.1, pheno.col=56, method='hk', addcovar=fcolor)
+plot(log.L.f.pet)
+abline(2.86,0)
+
+load("./scanTwo_objects/log.L.f.pet_p")
+pen <- calc.penalties(log.L.f.pet_p)
+print(log.L.f.pet_p_ <- stepwiseqtl(mapJal5.1, pheno.col=56, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fcolor))
+
+summary(log.L.f.pet_p_fit <- fitqtl(mapJal5.1, pheno.col=56, log.L.f.pet_p_, covar=fcolor, method="hk", get.ests = T))
+plotModel(log.L.f.pet_p_)
+```
+
+### Log petal 'a' female
+```{r}
+log.a.f.pet<- scanone(mapJal5.1, pheno.col=57, method='hk', addcovar=fcolor)
+plot(log.a.f.pet)
+abline(2.68,0)
+
+load("./scanTwo_objects/log.a.f.pet_p")
+pen <- calc.penalties(log.a.f.pet_p)
+print(log.a.f.pet_p_ <- stepwiseqtl(mapJal5.1, pheno.col=57, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fcolor))
+
+summary(log.a.f.pet_p_fit <- fitqtl(mapJal5.1, pheno.col=57, log.a.f.pet_p_, covar=fcolor, method="hk", get.ests = T))
+plotModel(log.a.f.pet_p_)
+```
+
+### Log petal 'b' female
+```{r}
+log.b.f.pet<- scanone(mapJal5.1, pheno.col=58, method='hk', addcovar=fcolor)
+plot(log.b.f.pet)
+abline(2.66,0)
+
+load("./scanTwo_objects/log.b.f.pet_p")
+pen <- calc.penalties(log.b.f.pet_p)
+print(log.b.f.pet_p_ <- stepwiseqtl(mapJal5.1, pheno.col=58, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fcolor))
+
+summary(log.b.f.pet_p_fit <- fitqtl(mapJal5.1, pheno.col=58, log.b.f.pet_p_, covar=fcolor, method="hk", get.ests = T))
+plotModel(log.b.f.pet_p_)
+```
+
+### Log nectar volume herm
+```{r}
+log.nec.vol.h<- scanone(mapJal5.1, pheno.col=59, method='hk', addcovar=hcolor)
+plot(log.nec.vol.h)
+abline(2.72,0)
+
+load("./scanTwo_objects/log.nec.vol.h_p")
+pen <- calc.penalties(log.nec.vol.h_p)
+print(log.nec.vol.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=59, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+
+summary(log.nec.vol.h_p_fit <- fitqtl(mapJal5.1, pheno.col=59, log.nec.vol.h_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.nec.vol.h_p_)
+```
+
+### Log nectar intensity herm
+```{r}
+log.intensite.h.nec<- scanone(mapJal5.1, pheno.col=60, method='hk', addcovar=hcolor)
+plot(log.intensite.h.nec)
+abline(2.75,0)
+
+load("./scanTwo_objects/log.intensite.h.nec_p")
+pen <- calc.penalties(log.intensite.h.nec_p)
+print(log.intensite.h.nec_p_ <- stepwiseqtl(mapJal5.1, pheno.col=60, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+
+summary(log.intensite.h.nec_p_fit <- fitqtl(mapJal5.1, pheno.col=60, log.intensite.h.nec_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.intensite.h.nec_p_)
+```
+
+### Log nectar 'RGB' herm
+```{r}
+log.RGB.h.nec<- scanone(mapJal5.1, pheno.col=61, method='hk', addcovar=hcolor)
+plot(log.RGB.h.nec)
+abline(2.73,0)
+
+load("./scanTwo_objects/log.RGB.h.nec_p")
+pen <- calc.penalties(log.RGB.h.nec_p)
+print(log.RGB.h.nec_p_ <- stepwiseqtl(mapJal5.1, pheno.col=61, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+
+summary(log.RGB.h.nec_p_fit <- fitqtl(mapJal5.1, pheno.col=61, log.RGB.h.nec_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.RGB.h.nec_p_)
+```
+
+### Log nectar 'R' herm !!
+```{r}
+log.R.h.nec<- scanone(mapJal5.1, pheno.col=62, method='hk', addcovar=hcolor)
+plot(log.R.h.nec)
+abline(2.72,0)
+
+load("./scanTwo_objects/log.R.h.nec_p")
+pen <- calc.penalties(log.R.h.nec_p)
+print(log.R.h.nec_p_ <- stepwiseqtl(mapJal5.1, pheno.col=62, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+
+summary(log.R.h.nec_p_fit <- fitqtl(mapJal5.1, pheno.col=62, log.R.h.nec_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.R.h.nec_p_)
+```
+
+### Log nectar 'G' herm
+```{r}
+log.G.h.nec<- scanone(mapJal5.1, pheno.col=63, method='hk', addcovar=hcolor)
+plot(log.G.h.nec)
+abline(2.67,0)
+
+load("./scanTwo_objects/log.G.h.nec_p")
+pen <- calc.penalties(log.G.h.nec_p)
+print(log.G.h.nec_p_ <- stepwiseqtl(mapJal5.1, pheno.col=63, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+
+summary(log.G.h.nec_p_fit <- fitqtl(mapJal5.1, pheno.col=63, log.G.h.nec_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.G.h.nec_p_)
+```
+
+### Log nectar 'B' herm
+```{r}
+log.B.h.nec<- scanone(mapJal5.1, pheno.col=64, method='hk', addcovar=hcolor)
+plot(log.B.h.nec)
+abline(2.66,0)
+
+load("./scanTwo_objects/log.B.h.nec_p")
+pen <- calc.penalties(log.B.h.nec_p)
+print(log.B.h.nec_p_ <- stepwiseqtl(mapJal5.1, pheno.col=64, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+
+summary(log.B.h.nec_p_fit <- fitqtl(mapJal5.1, pheno.col=64, log.B.h.nec_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.B.h.nec_p_)
+```
+
+### Log nectar 'L' herm
+```{r}
+log.L.h.nec<- scanone(mapJal5.1, pheno.col=65, method='hk', addcovar=hcolor)
+plot(log.L.h.nec)
+abline(2.87,0)
+
+load("./scanTwo_objects/log.L.h.nec_p")
+pen <- calc.penalties(log.L.h.nec_p)
+print(log.L.h.nec_p_ <- stepwiseqtl(mapJal5.1, pheno.col=65, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+
+summary(log.L.h.nec_p_fit <- fitqtl(mapJal5.1, pheno.col=65, log.L.h.nec_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.L.h.nec_p_)
+```
+
+### Log nectar 'a' herm
+```{r}
+log.a.h.nec<- scanone(mapJal5.1, pheno.col=66, method='hk', addcovar=hcolor)
+plot(log.a.h.nec)
+abline(2.77,0)
+
+load("./scanTwo_objects/log.a.h.nec_p")
+pen <- calc.penalties(log.a.h.nec_p)
+print(log.a.h.nec_p_ <- stepwiseqtl(mapJal5.1, pheno.col=66, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+
+summary(log.a.h.nec_p_fit <- fitqtl(mapJal5.1, pheno.col=66, log.a.h.nec_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.a.h.nec_p_)
+```
+
+### Log nectar 'b' herm
+```{r}
+log.b.h.nec<- scanone(mapJal5.1, pheno.col=67, method='hk', addcovar=hcolor)
+plot(log.b.h.nec)
+abline(2.83,0)
+
+load("./scanTwo_objects/log.b.h.nec_p")
+pen <- calc.penalties(log.b.h.nec_p)
+print(log.b.h.nec_p_ <- stepwiseqtl(mapJal5.1, pheno.col=67, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+
+summary(log.b.h.nec_p_fit <- fitqtl(mapJal5.1, pheno.col=67, log.b.h.nec_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.b.h.nec_p_)
+```
+
+### Log petal intensity herm
+```{r}
+log.intensity.h.pet<- scanone(mapJal5.1, pheno.col=68, method='hk', addcovar=hcolor)
+plot(log.intensity.h.pet)
+abline(2.78,0)
+
+load("./scanTwo_objects/log.intensity.h.pet_p")
+pen <- calc.penalties(log.intensity.h.pet_p)
+print(log.intensity.h.pet_p_ <- stepwiseqtl(mapJal5.1, pheno.col=68, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+
+summary(log.intensity.h.pet_p_fit <- fitqtl(mapJal5.1, pheno.col=68, log.intensity.h.pet_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.intensity.h.pet_p_)
+```
+
+### Log petal 'RGB' herm
+```{r}
+log.RGB.h.pet<- scanone(mapJal5.1, pheno.col=69, method='hk', addcovar=hcolor)
+plot(log.RGB.h.pet)
+abline(2.69,0)
+
+#load("./scanTwo_objects/log.RGB.h.pet_p")
+#pen <- calc.penalties(log.RGB.h.pet_p)
+#print(log.RGB.h.pet_p_ <- stepwiseqtl(mapJal5.1, pheno.col=69, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+
+#summary(log.RGB.h.pet_p_fit <- fitqtl(mapJal5.1, pheno.col=69, log.RGB.h.pet_p_, covar=hcolor, method="hk", get.ests = T))
+#plotModel(log.RGB.h.pet_p_)
+```
+
+### Log petal 'R' herm
+```{r}
+log.R.h.pet<- scanone(mapJal5.1, pheno.col=70, method='hk', addcovar=hcolor)
+plot(log.R.h.pet)
+abline(2.91,0)
+
+load("./scanTwo_objects/log.R.h.pet_p")
+pen <- calc.penalties(log.R.h.pet_p)
+print(log.R.h.pet_p_ <- stepwiseqtl(mapJal5.1, pheno.col=70, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+
+summary(log.R.h.pet_p_fit <- fitqtl(mapJal5.1, pheno.col=70, log.R.h.pet_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.R.h.pet_p_)
+```
+
+### Log petal 'G' herm
+```{r}
+log.G.h.pet<- scanone(mapJal5.1, pheno.col=71, method='hk', addcovar=hcolor)
+plot(log.G.h.pet)
+abline(2.76,0)
+
+load("./scanTwo_objects/log.G.h.pet_p")
+pen <- calc.penalties(log.G.h.pet_p)
+print(log.G.h.pet_p_ <- stepwiseqtl(mapJal5.1, pheno.col=71, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+
+summary(log.G.h.pet_p_fit <- fitqtl(mapJal5.1, pheno.col=71, log.G.h.pet_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.G.h.pet_p_)
+```
+
+### Log petal 'B' herm
+```{r}
+log.B.h.pet<- scanone(mapJal5.1, pheno.col=72, method='hk', addcovar=hcolor)
+plot(log.B.h.pet)
+abline(2.75,0)
+
+#load("./scanTwo_objects/log.B.h.pet_p")
+#pen <- calc.penalties(log.B.h.pet_p)
+#print(log.B.h.pet_p_ <- stepwiseqtl(mapJal5.1, pheno.col=72, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+
+#summary(log.B.h.pet_p_fit <- fitqtl(mapJal5.1, pheno.col=72, log.B.h.pet_p_, covar=hcolor, method="hk", get.ests = T))
+#plotModel(log.B.h.pet_p_)
+```
+
+### Log petal 'L' herm
+```{r}
+log.L.h.pet<- scanone(mapJal5.1, pheno.col=73, method='hk', addcovar=hcolor)
+plot(log.L.h.pet)
+abline(2.70,0)
+
+load("./scanTwo_objects/log.L.h.pet_p")
+pen <- calc.penalties(log.L.h.pet_p)
+print(log.L.h.pet_p_ <- stepwiseqtl(mapJal5.1, pheno.col=73, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+
+summary(log.L.h.pet_p_fit <- fitqtl(mapJal5.1, pheno.col=73, log.L.h.pet_p_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.L.h.pet_p_)
+```
+
+### Log petal 'a' herm
+```{r}
+log.a.h.pet<- scanone(mapJal5.1, pheno.col=74, method='hk', addcovar=hcolor)
+plot(log.a.h.pet)
+abline(2.76,0)
+
+load("./scanTwo_objects/log.a.h.pet_p")
+pen <- calc.penalties(log.a.h.pet_p)
+print(log.a.h.pet_ <- stepwiseqtl(mapJal5.1, pheno.col=74, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+
+summary(log.a.h.pet_fit <- fitqtl(mapJal5.1, pheno.col=74, log.a.h.pet_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.a.h.pet_)
+```
+
+### Log petal 'b' herm
+```{r}
+log.b.h.pet<- scanone(mapJal5.1, pheno.col=75, method='hk', addcovar=hcolor)
+plot(log.b.h.pet)
+abline(2.68,0)
+
+load("./scanTwo_objects/log.b.h.pet_p")
+pen <- calc.penalties(log.b.h.pet_p)
+print(log.b.h.pet_ <- stepwiseqtl(mapJal5.1, pheno.col=75, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+
+summary(log.b.h.pet_fit <- fitqtl(mapJal5.1, pheno.col=75, log.b.h.pet_, covar=hcolor, method="hk", get.ests = T))
+plotModel(log.b.h.pet_)
+```
+
+### Arcsin FS
+```{r}
+arcsin.FS<- scanone(mapJal5.1, pheno.col=76, method='hk', addcovar=crossed)
+plot(arcsin.FS)
+abline(2.73,0)
+
+#load("./scanTwo_objects/arcsin.FS_p")
+#pen <- calc.penalties(arcsin.FS_p)
+#print(arcsin.FS_p_ <- stepwiseqtl(mapJal5.1, pheno.col=76, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=crossed))
+
+#summary(arcsin.FS_p_fit <- fitqtl(mapJal5.1, pheno.col=76, arcsin.FS_p_, covar=crossed, method="hk", get.ests = T))
+#plotModel(arcsin.FS_p_)
+```
+
+### Log fruit mass
+```{r}
+log.fruit.mass<- scanone(mapJal5.1, pheno.col=77, method='hk', addcovar=crossed)
+plot(log.fruit.mass)
+abline(2.79,0)
+
+load("./scanTwo_objects/log.fruit.mass_p")
+pen <- calc.penalties(log.fruit.mass_p)
+print(log.fruit.mass_p_ <- stepwiseqtl(mapJal5.1, pheno.col=77, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=crossed))
+
+summary(log.fruit.mass_p_fit <- fitqtl(mapJal5.1, pheno.col=77, log.fruit.mass_p_, covar=crossed, method="hk", get.ests = T))
+plotModel(log.fruit.mass_p_)
+```
+
+### Log fruit diameter
+```{r}
+log.fruit.dia<- scanone(mapJal5.1, pheno.col=78, method='hk', addcovar=crossed)
+plot(log.fruit.dia)
+abline(2.64,0)
+
+load("./scanTwo_objects/log.fruit.dia_p")
+pen <- calc.penalties(log.fruit.dia_p)
+print(log.fruit.dia_p_ <- stepwiseqtl(mapJal5.1, pheno.col=78, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=crossed))
+
+summary(log.fruit.dia_p_fit <- fitqtl(mapJal5.1, pheno.col=78, log.fruit.dia_p_, covar=crossed, method="hk", get.ests = T))
+plotModel(log.fruit.dia_p_)
+```
+
+### Log seed
+```{r}
+log.seed<- scanone(mapJal5.1, pheno.col=79, method='hk', addcovar=crossed)
+plot(log.seed)
+abline(2.80,0)
+
+load("./scanTwo_objects/log.seed_p")
+pen <- calc.penalties(log.seed_p)
+print(log.seed_p_ <- stepwiseqtl(mapJal5.1, pheno.col=79, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=crossed))
+
+summary(log.seed_p_fit <- fitqtl(mapJal5.1, pheno.col=79, log.seed_p_, covar=crossed, method="hk", get.ests = T))
+plotModel(log.seed_p_)
+```
+
+### Log viable seed
+```{r}
+log.via.seed<- scanone(mapJal5.1, pheno.col=80, method='hk', addcovar=crossed)
+plot(log.via.seed)
+abline(2.73,0)
+
+load("./scanTwo_objects/log.via.seed_p")
+pen <- calc.penalties(log.via.seed_p)
+print(log.via.seed_p_ <- stepwiseqtl(mapJal5.1, pheno.col=80, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=crossed))
+
+summary(log.via.seed_p_fit <- fitqtl(mapJal5.1, pheno.col=80, log.via.seed_p_, covar=crossed, method="hk", get.ests = T))
+plotModel(log.via.seed_p_)
+```
+
+### Log seed T50
+```{r}
+log.seed.T50<- scanone(mapJal5.1, pheno.col=81, method='hk', addcovar=crossed)
+plot(log.seed.T50)
+abline(2.77,0)
+
+#load("./scanTwo_objects/log.seed.T50_p")
+#pen <- calc.penalties(log.seed.T50_p)
+#print(log.seed.T50_p_ <- stepwiseqtl(mapJal5.1, pheno.col=81, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=crossed))
+
+#summary(log.seed.T50_p_fit <- fitqtl(mapJal5.1, pheno.col=81, log.seed.T50_p_, covar=crossed, method="hk", get.ests = T))
+#plotModel(log.seed.T50_p_fit)
+```
+
+### Log seed MGT
+```{r}
+log.seed.MGT<- scanone(mapJal5.1, pheno.col=82, method='hk', addcovar=crossed)
+plot(log.seed.MGT)
+abline(2.82,0)
+
+#load("./scanTwo_objects/log.seed.MGT_p")
+#pen <- calc.penalties(log.seed.MGT_p)
+#print(log.seed.MGT_p_ <- stepwiseqtl(mapJal5.1, pheno.col=82, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=crossed))
+
+#summary(log.seed.MGT_p_fit <- fitqtl(mapJal5.1, pheno.col=82, log.seed.MGT_p_, covar=crossed, method="hk", get.ests = T))
+#plotModel(log.seed.MGT_p_)
+```
+
+### Log self fruit mass
+```{r}
+log.self.fruit.mass<- scanone(mapJal5.1, pheno.col=83, method='hk', addcovar=crossed)
+plot(log.self.fruit.mass)
+abline(2.83,0)
+
+#load("./scanTwo_objects/log.self.fruit.mass_p")
+#pen <- calc.penalties(log.self.fruit.mass_p)
+#print(log.self.fruit.mass_p_ <- stepwiseqtl(mapJal5.1, pheno.col=83, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=crossed))
+
+#summary(log.self.fruit.mass_p_fit <- fitqtl(mapJal5.1, pheno.col=83, log.self.fruit.mass_p_, covar=crossed, method="hk", get.ests = T))
+#plotModel(log.self.fruit.mass_p_)
+```
+
+### Log self fruit diameter
+```{r}
+log.self.fruit.dia<- scanone(mapJal5.1, pheno.col=84, method='hk', addcovar=crossed)
+plot(log.self.fruit.dia)
+abline(3.02,0)
+
+#load("./scanTwo_objects/log.self.fruit.dia_p")
+#pen <- calc.penalties(log.self.fruit.dia_p)
+#print(log.self.fruit.dia_p_ <- stepwiseqtl(mapJal5.1, pheno.col=84, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=crossed))
+
+#summary(log.self.fruit.dia_p_fit <- fitqtl(mapJal5.1, pheno.col=84, log.self.fruit.dia_p_, covar=crossed, method="hk", get.ests = T))
+#plotModel(log.self.fruit.dia_p_)
+```
+
+### Log self seed
+```{r}
+log.seld.seed<- scanone(mapJal5.1, pheno.col=85, method='hk', addcovar=crossed)
+plot(log.seld.seed)
+abline(2.89,0)
+
+#load("./scanTwo_objects/log.seld.seed_p")
+#pen <- calc.penalties(log.seld.seed_p)
+#print(log.seld.seed_p_ <- stepwiseqtl(mapJal5.1, pheno.col=85, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=crossed))
+
+#summary(log.seld.seed_p_fit <- fitqtl(mapJal5.1, pheno.col=85, log.seld.seed_p_, covar=crossed, method="hk", get.ests = T))
+#plotModel(log.seld.seed_p_)
+```
+
+### Viable pollen grains
+```{r}
+via.pollen.grains<- scanone(mapJal5.1, pheno.col=86, method='hk', addcovar=crossed)
+plot(via.pollen.grains)
+abline(2.39,0)
+
+#Didn't do scanTwo?
+```
+
+### Arcsin viable pollen proportion
+```{r}
+arcsin.via.pollen.prop<- scanone(mapJal5.1, pheno.col=87, method='hk', addcovar=crossed)
+plot(arcsin.via.pollen.prop)
+abline(2.72,0)
+
+load("./scanTwo_objects/arcsin.via.pollen.prop_p")
+pen <- calc.penalties(arcsin.via.pollen.prop_p)
+#print(arcsin.via.pollen.prop_p_ <- stepwiseqtl(mapJal5.1, pheno.col=87, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=crossed))
+
+#summary(arcsin.via.pollen.prop_p_fit <- fitqtl(mapJal5.1, pheno.col=87, arcsin.via.pollen.prop_p_, covar=crossed, method="hk", get.ests = T))
+#plotModel(arcsin.via.pollen.prop_p_)
+
+#NULL MODEL
+
+```
+
+### Seedling form
+```{r}
+seedling.form<- scanone(mapJal5.1, pheno.col=88, method='hk', model="binary", addcovar=crossed)
+plot(seedling.form)
+abline(2.76,0)
+
+#No scanTwo
+
+```
+
+### Seedling spacing
+```{r}
+seedling.spacing<- scanone(mapJal5.1, pheno.col=89, method='hk', model="binary", addcovar=crossed)
+plot(seedling.spacing)
+abline(2.71,0)
+
+#No scanTwo
+
+```
+
+### PC1.f
+```{r}
+pc1.f<- scanone(mapJal5.1, pheno.col=90, method='hk', addcovar=fmorph)
+plot(pc1.f)
+abline(2.77,0)
+
+load("./scanTwo_objects/pc1.f_p")
+pen <- calc.penalties(pc1.f_p)
+print(pc1.f_p_ <- stepwiseqtl(mapJal5.1, pheno.col=90, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+
+summary(pc1.f_p_fit <- fitqtl(mapJal5.1, pheno.col=90, pc1.f_p_, covar=fmorph, method="hk", get.ests = T))
+plotModel(pc1.f_p_)
+```
+
+### PC2.f
+```{r}
+pc2.f<- scanone(mapJal5.1, pheno.col=91, method='hk', addcovar=fmorph)
+plot(pc2.f)
+abline(2.80,0)
+
+load("./scanTwo_objects/pc2.f_p")
+pen <- calc.penalties(pc2.f_p)
+print(pc2.f_p_ <- stepwiseqtl(mapJal5.1, pheno.col=91, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=fmorph))
+
+summary(pc2.f_p_fit <- fitqtl(mapJal5.1, pheno.col=91, pc2.f_p_, covar=fmorph, method="hk", get.ests = T))
+plotModel(pc2.f_p_)
+```
+
+### PC3.f
+```{r}
+pc3.f<- scanone(mapJal5.1, pheno.col=92, method='hk', addcovar=fmorph)
+plot(pc3.f)
+abline(2.79,0)
+
+#No scanTwo
+```
+
+### PC1.h
+```{r}
+pc1.h<- scanone(mapJal5.1, pheno.col=93, method='hk', addcovar=hmorph)
+plot(pc1.h)
+abline(2.72,0)
+
+load("./scanTwo_objects/pc1.h_p")
+pen <- calc.penalties(pc1.h_p)
+print(pc1.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=93, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+
+summary(pc1.h_p_fit <- fitqtl(mapJal5.1, pheno.col=93, pc1.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(pc1.h_p_)
+```
+
+### PC2.h
+```{r}
+pc2.h<- scanone(mapJal5.1, pheno.col=94, method='hk', addcovar=hmorph)
+plot(pc2.h)
+abline(2.78,0)
+
+load("./scanTwo_objects/pc2.h_p")
+pen <- calc.penalties(pc2.h_p)
+print(pc2.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=94, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+
+summary(pc2.h_p_fit <- fitqtl(mapJal5.1, pheno.col=94, pc2.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(pc2.h_p_)
+```
+
+### PC3.h
+```{r}
+pc3.h<- scanone(mapJal5.1, pheno.col=95, method='hk', addcovar=hmorph)
+plot(pc3.h)
+abline(2.74,0)
+```

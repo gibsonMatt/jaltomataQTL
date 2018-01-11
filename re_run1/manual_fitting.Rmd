@@ -1,0 +1,170 @@
+---
+title: "manual_fitting"
+author: "Matthew Gibson"
+date: "January 8, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache=TRUE)
+library(qtl)
+library(ggplot2)
+pcDir <- "~/bin/jaltomataQTL/re_run1"
+setwd(pcDir)
+```
+
+For several of the traits we saw differences between what the scanone showed and what the stepwise model fitting produced. Here I am investigating those issues, fitting models maually to generate needed output. 
+
+```{r, warning=F}
+mapJal5.1 <- read.cross("csv",pcDir, "final_map_6_15_t.csv", genotypes=c("A", "H"), alleles=c("A", "B"), na.strings=c("-", "NA"), estimate.map=F,crosstype = "bc")
+#write.cross(mapJal5.1, format="csvr")
+#plot.map(mapJal5.1)
+names(mapJal5.1$geno) <- c('L.1', 'L.2', 'L.3', 'L.4', 'L.5', 'L.6', 'L.7', 'L.8', 'L.9', 'L.10', 'L.11', 'L.12')
+mapJal5.1$geno <- mapJal5.1$geno[c(9, 6, 3, 5, 1, 2,4,7,8,10,11,12)]
+#names(mapJal5.1$geno) <- c('L.9 (Ch.1)', 'L.6 (Ch.2)', 'L.3 (Ch.5)', 'L.5 (Ch.6)', 'L.1 (Ch.12)', 'L.2', 'L.4', 'L.7', 'L.8', 'L.10', 'L.11', 'L.12')
+names(mapJal5.1$geno) <- c('(Ch.1)', '(Ch.2)', '(Ch.5)', '(Ch.6)', '(Ch.12)', 'L.2', 'L.4', 'L.7', 'L.8', 'L.10', 'L.11', 'L.12')
+plot.map(mapJal5.1)
+
+mapJal5.1 <- calc.genoprob(mapJal5.1, step=1)
+```
+
+
+
+
+### Log fruit mass
+```{r}
+log.fruit.mass<- scanone(mapJal5.1, pheno.col=77, method='hk', addcovar=crossed)
+plot(log.fruit.mass)
+abline(2.79,0)
+
+
+log.fruit.mass_2<- scantwo(mapJal5.1, pheno.col=77, method='hk', addcovar=crossed)
+
+
+summary(log.fruit.mass_p_fit <- fitqtl(mapJal5.1, pheno.col=77, log.fruit.mass_p_, covar=crossed, method="hk", get.ests = T))
+plotModel(log.fruit.mass_p_)
+
+#First fit qtl with known scanone peaks
+qtl <- makeqtl(mapJal5.1, chr=c("(Ch.6)", "L.2", "L.4", "L.11"), pos = c(113,76.5,0,82.4), what="prob")
+#Fit this qtl model
+summary(log.fruit.mass_p_fit <- fitqtl(mapJal5.1, pheno.col=77, qtl=qtl, covar=crossed, method="hk"))
+#Refine positions, since current posistions are defined based on scanone
+rqtl <- refineqtl(mapJal5.1, qtl=qtl, method="hk", pheno.col=77,covar = crossed)
+#plotLodProfile(rqtl)
+
+#Look for additional additive qtl, there are none.
+summary(addQ <- addqtl(mapJal5.1, qtl=rqtl, method="hk", covar=crossed, pheno.col = 77))
+
+#Refit with new positions, model LOD should increase. It does.
+summary(log.fruit.mass_p_fit <- fitqtl(mapJal5.1, pheno.col=77, qtl=rqtl, covar=crossed, method="hk",get.ests = TRUE, dropone=TRUE))
+
+
+```     
+I can't find any concrete evidence for a QTL on Ch.12. Safe choice is to not include it. In fact, based on the data I would more likely add a locus from Ch.5 before 12. I have no idea why the stepwise alg is grabbing the Ch.12 locus. 
+
+### Log petal length herm
+```{r}
+log.petal.h<- scanone(mapJal5.1, pheno.col=36, method='hk', addcovar=hmorph)
+plot(log.petal.h)
+abline(2.79,0)
+
+load("./scanTwo_objects/log.petal.h_p")
+pen <- calc.penalties(log.petal.h_p)
+print(log.petal.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=36, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+
+summary(log.petal.h_p_fit <- fitqtl(mapJal5.1, pheno.col=36, log.petal.h_p_, covar=hmorph, method="hk", get.ests = T))
+plotModel(log.petal.h_p_)
+
+qtl <- makeqtl(mapJal5.1, chr=c("(Ch.1)", "L.4", "L.7"), pos = c(49,37.4,73.1), what="prob")
+#Fit this qtl model
+summary(log.petal.h_p_fit <- fitqtl(mapJal5.1, pheno.col=36, qtl=qtl, covar=hmorph, method="hk"))
+#Refine positions, since current posistions are defined based on scanone
+rqtl <- refineqtl(mapJal5.1, qtl=qtl, method="hk", pheno.col=36,covar = hmorph)
+
+summary(addQ <- addqtl(mapJal5.1, qtl=rqtl, method="hk", covar=hmorph, pheno.col=36))
+
+summary(log.petal.h_p_fit <- fitqtl(mapJal5.1, pheno.col=36, qtl=rqtl, covar=hmorph, method="hk",get.ests =TRUE , dropone=TRUE))
+
+```
+
+
+### Corolla diameter herm
+```{r}
+cor.dia.h<- scanone(mapJal5.1, pheno.col=32, method='hk', addcovar=hmorph)
+plot(cor.dia.h)
+abline(2.78,0)
+
+load("./scanTwo_objects/cor.dia.h_p")
+pen <- calc.penalties(cor.dia.h_p)
+print(cor.dia.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=32, max.qtl=8, penalties=pen, method="hk", verbose=T, keeptrace = T,additive.only = T,covar=hmorph))
+
+
+#Original stepwise showed two QTL: on 10 and on 7. Yet the scanone had two, on one 7 and one on 4. Both show up as conditionally additive (?) with QTL on 10 in the scantwo results themselves. 
+qtl <- makeqtl(mapJal5.1, chr=c("L.4", "L.7"), pos = c(19.1,73.1), what="prob")
+qtl_w10 <- makeqtl(mapJal5.1, chr=c("L.4", "L.7", "L.10"), pos = c(19.1,73.1, 21.1), what="prob")
+
+#Fit this qtl model
+summary(cor.dia.h_p_fit <- fitqtl(mapJal5.1, pheno.col=32, qtl=qtl, covar=hmorph, method="hk"))
+summary(cor.dia.h_p_fit <- fitqtl(mapJal5.1, pheno.col=32, qtl=qtl_w10, covar=hmorph, method="hk"))
+#Refine positions, since current posistions are defined based on scanone
+rqtl <- refineqtl(mapJal5.1, qtl=qtl, method="hk", pheno.col=32,covar = hmorph)
+rqtl_w10 <- refineqtl(mapJal5.1, qtl=qtl_w10, method="hk", pheno.col=32,covar = hmorph)
+
+#Add QTL identifies L.4 as having a qtl, so that will be included in our final model
+summary(addQ <- addqtl(mapJal5.1, qtl=rqtl, method="hk", covar=hmorph, pheno.col=32))
+
+summary(cor.dia.h_p_fit <- fitqtl(mapJal5.1, pheno.col=32, qtl=rqtl_w10, covar=hmorph, method="hk",get.ests =TRUE , dropone=TRUE))
+```
+
+
+
+### Log petal 'L' herm
+```{r}
+log.L.h.pet<- scanone(mapJal5.1, pheno.col=73, method='hk', addcovar=hcolor)
+plot(log.L.h.pet)
+abline(2.70,0)
+
+load("./scanTwo_objects/log.L.h.pet_p")
+pen <- calc.penalties(log.L.h.pet_p)
+print(log.L.h.pet_p_ <- stepwiseqtl(mapJal5.1, pheno.col=73, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hcolor))
+
+qtl <- makeqtl(mapJal5.1, chr=c("(Ch.2)"), pos = c(65.3), what="prob")
+
+summary(log.L.h.pet_p_fit <- fitqtl(mapJal5.1, pheno.col=73, qtl=qtl, covar=hcolor, method="hk"))
+qtl <- refineqtl(mapJal5.1, qtl=qtl, method="hk", pheno.col=73,covar = hcolor)
+
+summary(addQ <- addqtl(mapJal5.1, qtl=qtl, method="hk", covar=hcolor, pheno.col=73))
+qtl_w10 <- makeqtl(mapJal5.1, chr=c("(Ch.2)", "L.10"), pos = c(65.3,23.7), what="prob")
+qtl <- refineqtl(mapJal5.1, qtl=qtl_w10, method="hk", pheno.col=73,covar = hcolor)
+
+summary(log.L.h.pet_p_fit <- fitqtl(mapJal5.1, pheno.col=73, qtl=qtl, covar=hcolor, method="hk", get.ests = T))
+
+```
+
+
+### PC2.h
+```{r}
+pc2.h<- scanone(mapJal5.1, pheno.col=94, method='hk', addcovar=hmorph)
+plot(pc2.h)
+abline(2.78,0)
+
+load("./scanTwo_objects/pc2.h_p")
+pen <- calc.penalties(pc2.h_p)
+print(pc2.h_p_ <- stepwiseqtl(mapJal5.1, pheno.col=94, max.qtl=8, penalties=pen, method="hk", verbose=F, keeptrace = T,additive.only = F,covar=hmorph))
+
+#Start with our best QTL candidate
+qtl <- makeqtl(mapJal5.1, chr=c("L.4"), pos = c(48.2), what="prob")
+summary(pc2.h_p_fit <- fitqtl(mapJal5.1, pheno.col=94, qtl=qtl, covar=hmorph, method="hk"))
+summary(addQ <- addqtl(mapJal5.1, qtl=qtl, method="hk", covar=hmorph, pheno.col=94))
+qtl <- makeqtl(mapJal5.1, chr=c("L.4", "L.7"), pos = c(48.2, 73.1), what="prob")
+qtl <- refineqtl(mapJal5.1, qtl=qtl, method="hk", pheno.col=94,covar = hmorph)
+summary(pc2.h_p_fit <- fitqtl(mapJal5.1, pheno.col=94, qtl=qtl, covar=hmorph, method="hk"))
+summary(addQ <- addqtl(mapJal5.1, qtl=qtl, method="hk", covar=hmorph, pheno.col=94))
+qtl <- makeqtl(mapJal5.1, chr=c("L.4", "L.7", "L.11"), pos = c(48.2, 73.1, 67.5), what="prob")
+qtl <- refineqtl(mapJal5.1, qtl=qtl, method="hk", pheno.col=94,covar = hmorph)
+summary(pc2.h_p_fit <- fitqtl(mapJal5.1, pheno.col=94, qtl=qtl, covar=hmorph, method="hk", get.ests = T))
+
+
+
+```
+
