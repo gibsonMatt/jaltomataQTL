@@ -2,9 +2,6 @@
 Will take in the Joinmap output from Stacks, filter markers based on #s of individual calls,
 and output a new file--either in R/QTL format, Joinmap, or Linkage.
 
-I want to build this into an all-purpose file format manipulation program, allowing me to move from program 
-to program easily.
-
 #FOR BACKCROSS 1 POPULATIONS ONLY
 """
 import sys
@@ -154,7 +151,7 @@ def linkageOutput(genotypes, file, fam, nind, individuals):
 
 def main(*args):
     """Main function"""
-    parser = argparse.ArgumentParser(description="Calculate Fst at each SNP location between populations")
+    parser = argparse.ArgumentParser(description="Convert between R/QTL and joinmap formats, with optional filtering")
     parser.add_argument("-v","--verbose", help="Enable debugging messages to be displayed", action='store_true')
     parser.add_argument("-i","--inputType", help="Type of input file (rqtl or joinmap)")
     parser.add_argument("-ot", "--outputType", help="Type of file to output to (rqtl, joinmap, or linkage)")
