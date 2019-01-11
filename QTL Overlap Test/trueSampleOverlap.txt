@@ -1,0 +1,6 @@
+133	Red with Red Morph.Morph
+1	Green with Green Color.Color
+8	Blue with Blue Fert.Fert
+14	Red with Green Morph.Color
+2	Green with Blue Color.Fert
+31	Blue with Red Fert.Morph
